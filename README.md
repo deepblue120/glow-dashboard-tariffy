@@ -9,6 +9,7 @@ Tariffy muss installiert und eingerichtet sein.
 ## Funktionen
 
 - **Übersicht:** Fixkosten pro Monat (mit Umschalter „Ohne Kredit“), „Braucht dich“ (Nachzahlung, Kündigungsfrist, Tarifwechsel), nächste Termine und je Vertrag eine Kachel. Die Kacheln sind filterbar und sortierbar nach Dringlichkeit, Abschlag, Gesamtkosten, Laufzeit, Restlaufzeit oder Art des Vertrags (Pfeil-Knopf kehrt die Reihenfolge um, die Wahl wird gemerkt).
+- **Kredite & Leasing:** Kredite und Leasingverträge stehen wie in Tariffy zusammen in einer Gruppe. Leasing zeigt Kilometerstand, Soll, Hochrechnung und die erwartete Nach- oder Gutschrift. Eigene Icons (`mdi:...`) aus Tariffy werden übernommen.
 - **Verträge:** eine Zeile je Vertrag, nach Gruppen sortiert. Ein Tipp auf eine Kachel der Übersicht springt direkt zum geöffneten Vertrag. Beim Zurückwechseln zur Übersicht schließen sich alle Verträge wieder. Antippen klappt Vertrag, Preise, Verbrauch und Einmalposten auf. Kredite zeigen Restschuld, Zins, nächste Rate und Verlauf.
 - **Kosten:** Zeitraum wie im Auto-Dashboard: Monat, Jahr, Gesamt oder Plan (Jahresplan), bei Monat und Jahr mit Pfeilen zum Blättern. Die Kostenaufteilung als Ring (je Sparte oder je Vertrag) und die Spalte „Im Zeitraum“ folgen dem Zeitraum. Darunter Verbrauchsverträge, Pauschalverträge und Kredite mit Summen.
 - **Historie:** archivierte Verträge und frühere Laufzeiten mit Kosten, Verbrauch und Saldo.
@@ -29,14 +30,14 @@ Tariffy muss installiert und eingerichtet sein.
 
 1. `dist/tariffy-glow.js` nach `/config/www/tariffy-glow/` kopieren.
 2. **Einstellungen → Dashboards → ⋮ → Ressourcen** → Eintrag hinzufügen (Typ **JavaScript-Modul**):
-   `/local/tariffy-glow/tariffy-glow.js?v=4`
+   `/local/tariffy-glow/tariffy-glow.js?v=5`
 
 ## Konfiguration
 
 ```yaml
 type: custom:tariffy-glow
 # title: Tariffy       # optional
-# show_loans: false    # Kredite ausblenden
+# show_loans: false    # Kredite und Leasing ausblenden
 ```
 
 ## Hinweise
