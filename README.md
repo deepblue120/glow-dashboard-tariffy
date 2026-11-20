@@ -10,9 +10,10 @@ Tariffy muss installiert und eingerichtet sein.
 
 - **Übersicht:** Fixkosten pro Monat (mit Umschalter „Ohne Kredit“), „Braucht dich“ (Nachzahlung, Kündigungsfrist, Tarifwechsel), nächste Termine und je Vertrag eine Kachel. Die Kacheln sind filterbar und sortierbar nach Dringlichkeit, Abschlag, Gesamtkosten, Laufzeit, Restlaufzeit oder Art des Vertrags (Pfeil-Knopf kehrt die Reihenfolge um, die Wahl wird gemerkt).
 - **Verträge:** eine Zeile je Vertrag, nach Gruppen sortiert. Ein Tipp auf eine Kachel der Übersicht springt direkt zum geöffneten Vertrag. Beim Zurückwechseln zur Übersicht schließen sich alle Verträge wieder. Antippen klappt Vertrag, Preise, Verbrauch und Einmalposten auf. Kredite zeigen Restschuld, Zins, nächste Rate und Verlauf.
-- **Kosten:** Kostenaufteilung als Ring (Kosten bisher oder pro Jahr, Jahresauswahl, je Sparte oder je Vertrag), darunter Verbrauchsverträge, Pauschalverträge und Kredite mit Summen.
+- **Kosten:** Zeitraum wie im Auto-Dashboard: Monat, Jahr, Gesamt oder Plan (Jahresplan), bei Monat und Jahr mit Pfeilen zum Blättern. Die Kostenaufteilung als Ring (je Sparte oder je Vertrag) und die Spalte „Im Zeitraum“ folgen dem Zeitraum. Darunter Verbrauchsverträge, Pauschalverträge und Kredite mit Summen.
 - **Historie:** archivierte Verträge und frühere Laufzeiten mit Kosten, Verbrauch und Saldo.
 - **Sicherung** (nur Admins): Sicherung herunterladen, aus Datei wiederherstellen (mit Vorschau und Rückfrage) und gelöschte Verträge zurückholen oder endgültig vergessen.
+- Die Karte startet immer bei „Übersicht“, auch nach dem Verlassen der Seite und der Rückkehr.
 - Unter 600 px Breite stellt sich die Karte auf eine Spalte um.
 
 ## Installation
@@ -28,7 +29,7 @@ Tariffy muss installiert und eingerichtet sein.
 
 1. `dist/tariffy-glow.js` nach `/config/www/tariffy-glow/` kopieren.
 2. **Einstellungen → Dashboards → ⋮ → Ressourcen** → Eintrag hinzufügen (Typ **JavaScript-Modul**):
-   `/local/tariffy-glow/tariffy-glow.js?v=3`
+   `/local/tariffy-glow/tariffy-glow.js?v=4`
 
 ## Konfiguration
 
