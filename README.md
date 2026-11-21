@@ -10,7 +10,7 @@ Tariffy muss installiert und eingerichtet sein.
 
 - **Übersicht:** Fixkosten pro Monat (mit Umschalter „Ohne Kredit“), „Braucht dich“ (Nachzahlung, Kündigungsfrist, Tarifwechsel), nächste Termine und je Vertrag eine Kachel. Die Kacheln sind filterbar und sortierbar nach Dringlichkeit, Abschlag, Gesamtkosten, Laufzeit, Restlaufzeit oder Art des Vertrags (Pfeil-Knopf kehrt die Reihenfolge um, die Wahl wird gemerkt).
 - **Vertragsdetails** wie im Tariffy-Panel: Zahlweise und nächste Abbuchung, Mindestlaufzeit und Kündigungsfrist, Versicherungsart, Folgevertrag, Außenzähler beim Wasser, PV-Autarkie mit Gesamtverbrauch und die Abschlagsempfehlung.
-- **Labels:** Labels, die du in Home Assistant am Gerät eines Vertrags vergeben hast (Einstellungen, Geräte, Tariffy, Gerät, Labels), erscheinen als Filter auf der Übersicht, in den Kacheln, in den Vertragsdetails und als Aufteilung „Je Label“ auf der Kosten-Seite (zum Beispiel Personen oder Interessen). Ein Vertrag mit mehreren Labels teilt seine Kosten gleichmäßig. Namen und Farben der Labels liest die Karte für Admins aus der Label-Verwaltung, für andere Benutzer erscheint die Label-ID als Name.
+- **Labels:** Labels, die du in Home Assistant am Gerät eines Vertrags vergeben hast (Einstellungen, Geräte, Tariffy, Gerät, Labels), erscheinen als Filter auf der Übersicht, in den Kacheln, in den Vertragsdetails und als Aufteilung „Je Label“ auf der Kosten-Seite (zum Beispiel Personen oder Interessen). Ein Vertrag mit mehreren Labels zählt bei jedem Label voll („Voll zählen“, Standard, als Balken mit Prozent von allen Kosten, die Summe ist dann über 100 %) oder teilt seine Kosten gleichmäßig („Teilen“, als Ring). Namen und Farben der Labels liest die Karte für Admins aus der Label-Verwaltung, für andere Benutzer erscheint die Label-ID als Name.
 - **Hauskosten** (Abfallgebühren, Straßenreinigung, Grundsteuer, Schornsteinfeger …, ab Tariffy 1.33) haben eine eigene Gruppe mit Art und „Betrag“ statt „Abschlag“, auf der Übersicht, in der Vertragsliste, in den Filtern und auf der Kosten-Seite.
 - **Kredite & Leasing:** Kredite und Leasingverträge stehen wie in Tariffy zusammen in einer Gruppe. Leasing zeigt Kilometerstand, Soll, Hochrechnung und die erwartete Nach- oder Gutschrift. Eigene Icons (`mdi:...`) aus Tariffy werden übernommen.
 - **Verträge:** eine Zeile je Vertrag, nach Gruppen sortiert. Ein Tipp auf eine Kachel der Übersicht springt direkt zum geöffneten Vertrag. Beim Zurückwechseln zur Übersicht schließen sich alle Verträge wieder. Antippen klappt Vertrag, Preise, Verbrauch und Einmalposten auf. Kredite zeigen Restschuld, Zins, nächste Rate und Verlauf.
@@ -34,7 +34,7 @@ Tariffy muss installiert und eingerichtet sein.
 
 1. `dist/tariffy-glow.js` nach `/config/www/tariffy-glow/` kopieren.
 2. **Einstellungen → Dashboards → ⋮ → Ressourcen** → Eintrag hinzufügen (Typ **JavaScript-Modul**):
-   `/local/tariffy-glow/tariffy-glow.js?v=10`
+   `/local/tariffy-glow/tariffy-glow.js?v=11`
 
 ## Konfiguration
 
@@ -47,7 +47,7 @@ type: custom:tariffy-glow
 #   Fitnessstudio: [Anna, Fitness]
 #   Strom Haus: [Anna, Ben]
 # label_include: [Anna, Ben]         # nur diese Labels berücksichtigen
-# label_split: full                  # Vertrag zählt bei jedem Label voll statt geteilt
+# label_split: equal                 # Vorauswahl „Teilen“ statt „Voll zählen“
 ```
 
 ## Hinweise
