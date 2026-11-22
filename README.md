@@ -16,6 +16,7 @@ Tariffy muss installiert und eingerichtet sein.
 - **Verträge:** eine Zeile je Vertrag, nach Gruppen sortiert. Ein Tipp auf eine Kachel der Übersicht springt direkt zum geöffneten Vertrag. Beim Zurückwechseln zur Übersicht schließen sich alle Verträge wieder. Antippen klappt Vertrag, Preise, Verbrauch und Einmalposten auf. Kredite zeigen Restschuld, Zins, nächste Rate und Verlauf.
 - **Kosten:** Zeitraum wie im Auto-Dashboard: Monat, Jahr, Gesamt oder Plan (Jahresplan), bei Monat und Jahr mit Pfeilen zum Blättern. Die Kostenaufteilung als Ring (je Sparte oder je Vertrag) und die Spalte „Im Zeitraum“ folgen dem Zeitraum. Darunter Verbrauchsverträge, Pauschalverträge und Kredite mit Summen.
 - **Kosten, Art der Zahlung:** Bei Monat und Jahr wählst du, wie gerechnet wird. **Anteilig** verteilt jede Zahlung auf die Monate, für die sie gilt (jährlich ÷ 12, halbjährlich ÷ 6, vierteljährlich ÷ 3). **Fällig** zählt die Zahlungen, die im Zeitraum wirklich anfallen. **Verbrauch** nimmt bei Strom, Gas und Wasser die Verbrauchskosten. Dieselbe Wahl „Anteilig / Fällig im <Monat>“ gibt es in der Fixkosten-Kachel der Übersicht. Kredite und Leasing sind in Kostenaufteilung und Gesamtkachel enthalten.
+- **Farben:** Auf der Seite Sicherung (Admins) wählst du für jede genutzte Sparte und jede Gruppe eine Farbe, aus einer Palette oder frei. Sie gilt für Symbole, Kostenaufteilung und Legenden. Gespeichert wird sie im Benutzerkonto in Home Assistant. Für alle Benutzer lässt sie sich als `colors:` in der Kartenkonfiguration eintragen (Knopf „Als YAML kopieren“).
 - **Historie:** archivierte Verträge und frühere Laufzeiten mit Kosten, Verbrauch und Saldo.
 - **Sicherung** (nur Admins): Sicherung herunterladen, aus Datei wiederherstellen (mit Vorschau und Rückfrage) und gelöschte Verträge zurückholen oder endgültig vergessen.
 - Die Karte startet immer bei „Übersicht“, auch nach dem Verlassen der Seite und der Rückkehr.
@@ -34,7 +35,7 @@ Tariffy muss installiert und eingerichtet sein.
 
 1. `dist/tariffy-glow.js` nach `/config/www/tariffy-glow/` kopieren.
 2. **Einstellungen → Dashboards → ⋮ → Ressourcen** → Eintrag hinzufügen (Typ **JavaScript-Modul**):
-   `/local/tariffy-glow/tariffy-glow.js?v=11`
+   `/local/tariffy-glow/tariffy-glow.js?v=12`
 
 ## Konfiguration
 
@@ -43,6 +44,9 @@ type: custom:tariffy-glow
 # title: Tariffy       # optional
 # show_loans: false    # Kredite und Leasing ausblenden
 # abo_words: [fitness, gym, studio]   # Wörter, mit denen „Sonstiges“ zu „Telefon & Abos“ wird
+# colors:                           # Farben für alle Benutzer (eigene Wahl auf der Seite Sicherung hat Vorrang)
+#   sparte: { gas: "#fb923c", water: "#38bdf8" }
+#   group: { energy: "#38bdf8" }
 # labels:                           # Labels ohne Home Assistant, haben Vorrang
 #   Fitnessstudio: [Anna, Fitness]
 #   Strom Haus: [Anna, Ben]
