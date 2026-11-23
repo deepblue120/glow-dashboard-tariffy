@@ -37,7 +37,7 @@ Tariffy muss installiert und eingerichtet sein.
 
 1. `dist/tariffy-glow.js` nach `/config/www/tariffy-glow/` kopieren.
 2. **Einstellungen → Dashboards → ⋮ → Ressourcen** → Eintrag hinzufügen (Typ **JavaScript-Modul**):
-   `/local/tariffy-glow/tariffy-glow.js?v=18`
+   `/local/tariffy-glow/tariffy-glow.js?v=19`
 
 ## Konfiguration
 
@@ -61,6 +61,7 @@ type: custom:tariffy-glow
 
 ## Hinweise
 
+- **Sicherheit:** Vertragsnamen, Anbieter, Tarife, Labels und andere Eingaben werden nie als HTML gelesen. Die Karte setzt sie als reinen Text oder als Attributwert ein und nutzt keinen der HTML-Eingänge, die auch Tariffy in seiner Oberfläche verbietet. `node scripts/check-no-html-sinks.mjs` prüft das.
 - **Summen:** Übersicht und Kosten rechnen gleich. Ein Vertrag zählt in einem Monat nur, wenn seine Laufzeit in diesen Monat fällt: Verträge, die schon abgelaufen sind oder erst später beginnen, zählen nicht. Verträge ohne Beginn zählen immer. Die Preise in den Kacheln (€ / Mon) sind dagegen der feste Monatsanteil des Vertrags.
 - Tariffy hat keine Sparte für Mitgliedschaften. Verträge der Sparte „Sonstiges“ mit einem der Wörter `fitness`, `gym`, `studio`, `sport`, `yoga`, `mitglied`, `abo` oder `club` im Titel, Anbieter oder Tarif (oder einem passenden Icon wie `mdi:dumbbell`) stehen deshalb bei „Telefon & Abos“. Mit `abo_words` änderst du die Wörter, eine leere Liste schaltet die Zuordnung ab.
 - Nur Deutsch.
