@@ -36,7 +36,7 @@ Tariffy muss installiert und eingerichtet sein.
 
 1. `dist/tariffy-glow.js` nach `/config/www/tariffy-glow/` kopieren.
 2. **Einstellungen → Dashboards → ⋮ → Ressourcen** → Eintrag hinzufügen (Typ **JavaScript-Modul**):
-   `/local/tariffy-glow/tariffy-glow.js?v=16`
+   `/local/tariffy-glow/tariffy-glow.js?v=17`
 
 ## Konfiguration
 
