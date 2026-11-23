@@ -1,7 +1,7 @@
 /*
  * tariffy-glow.js
  * Ablage:    /config/www/tariffy-glow/tariffy-glow.js
- * Ressource: /local/tariffy-glow/tariffy-glow.js?v=19  (Typ: JavaScript-Modul)
+ * Ressource: /local/tariffy-glow/tariffy-glow.js?v=20  (Typ: JavaScript-Modul)
  * YAML:      type: custom:tariffy-glow
  *
  * Glow-Karte für die Integration „Tariffy“ (weskona/tariffy). Sie liest die Verträge über den
@@ -9,7 +9,370 @@
  */
 
 window.customCards = window.customCards || [];
-const VERSION = "0.11.1";
+// ---------- Sprache ----------
+// Die Texte im Code sind Deutsch. T() liefert bei englischer Oberfläche die Übersetzung aus EN (Schlüssel = deutscher Text) und ersetzt {name}.
+let LANG = "de";
+const EN = {
+  "Strom":"Electricity",
+  "Strom HT/NT":"Electricity HT/NT",
+  "Gas":"Gas",
+  "Wasser":"Water",
+  "Internet":"Internet",
+  "Mobilfunk":"Mobile",
+  "Streaming":"Streaming",
+  "Versicherung":"Insurance",
+  "Kredit":"Loan",
+  "Leasing":"Leasing",
+  "Hauskosten":"House costs",
+  "Sonstiges":"Other",
+  "Energie & Wasser":"Energy & water",
+  "Telefon & Abos":"Phone & subscriptions",
+  "Versicherung & Sonstiges":"Insurance & other",
+  "Kredite & Leasing":"Loans & leasing",
+  "Das ist keine gültige Tariffy-Sicherung.":"This is not a valid Tariffy backup.",
+  "Einen Vertrag mit diesem Namen und dieser Sparte gibt es schon.":"A contract with this name and category already exists.",
+  "Diese Sicherung gibt es nicht mehr.":"This backup no longer exists.",
+  "Das Wiederherstellen ist fehlgeschlagen.":"Restoring failed.",
+  "Übersicht":"Overview",
+  "Verträge":"Contracts",
+  "Kosten":"Costs",
+  "Vorschau":"Forecast",
+  "Historie":"History",
+  "Einstellungen":"Settings",
+  "Abfallgebühren":"Waste fees",
+  "Straßenreinigung":"Street cleaning",
+  "Niederschlagswasser (Regenwassergebühr)":"Rainwater (stormwater fee)",
+  "Grundsteuer":"Property tax",
+  "Schornsteinfeger":"Chimney sweep",
+  "Winterdienst":"Winter service",
+  "Hausmeister / Gebäudeservice":"Caretaker / building services",
+  "Auto (Kfz)":"Car",
+  "Gebäude / Haus":"Building / house",
+  "Hausrat":"Household contents",
+  "Haftpflicht":"Liability",
+  "Kranken":"Health",
+  "Leben":"Life",
+  "Rechtsschutz":"Legal protection",
+  "Unfall":"Accident",
+  "Sonstige":"Other",
+  "vierteljährlich":"quarterly",
+  "halbjährlich":"half-yearly",
+  "jährlich":"yearly",
+  "monatlich":"monthly",
+  "Dringlichkeit":"Urgency",
+  "Abschlag":"Instalment",
+  "Gesamtkosten":"Total cost",
+  "Laufzeit":"Term",
+  "Restlaufzeit":"Remaining term",
+  "Art des Vertrags":"Type of contract",
+  "Tariffy nicht erreichbar":"Tariffy not reachable",
+  "# Noch keine eigenen Farben oder Symbole gewählt":"# No own colours or icons chosen yet",
+  "Standard-Symbol":"Default icon",
+  "Schließen":"Close",
+  "Übernehmen":"Apply",
+  "Standard":"Default",
+  "Symbol":"Icon",
+  "Farben und Symbole":"Colours and icons",
+  "Wähle für jede Sparte, die du nutzt, eine Farbe und ein Symbol. Die Farbe gilt für Symbole, Kostenaufteilung und Legenden, das Symbol für die Kacheln und Zeilen. Ein eigenes Symbol, das du in Tariffy an einem Vertrag gewählt hast, hat Vorrang. Die Gruppen färben den Balken der Fixkosten auf der Übersicht. Die Wahl wird in deinem Benutzerkonto in Home Assistant gespeichert und gilt auf allen deinen Geräten.":"Choose a colour and an icon for every category you use. The colour applies to icons, the cost split and legends, the icon to tiles and rows. An own icon that you chose for a contract in Tariffy takes precedence. The groups colour the bar of the fixed costs on the overview. Your choice is saved in your Home Assistant user account and applies on all your devices.",
+  "Sparten":"Categories",
+  "Gruppen":"Groups",
+  "Alle auf Standard":"Reset all",
+  "Als YAML kopieren":"Copy as YAML",
+  "Für alle Benutzer trägst du Farben und Symbole in der Kartenkonfiguration ein. Das YAML dafür steht hier:":"For all users, enter colours and icons in the card configuration. The YAML for that is here:",
+  "<p>Noch keine Verträge.</p>":"<p>No contracts yet.</p>",
+  "Nachzahlung droht":"Balance due",
+  "Abschlag auf":"Raise instalment to",
+  "erhöhen":"",
+  "Nachzahlung zu erwarten":"Balance due expected",
+  "Jetzt kündigen":"Cancel now",
+  "Frist bis":"Deadline",
+  "Kündigungsfrist läuft":"Notice period running",
+  "Tage":"days",
+  "Mehrkilometer":"Extra kilometres",
+  "Bei Rückgabe etwa":"At return about",
+  "km über der Erlaubnis":"km over the allowance",
+  "Mehr Kilometer als erlaubt":"More kilometres than allowed",
+  "Wechsel am":"Switch on",
+  "Neuer Tarif hinterlegt":"New tariff saved",
+  "Abgelaufen":"Expired",
+  "Guthaben":"Credit",
+  "Gutschrift erwartet":"Credit expected",
+  "km gefahren":"km driven",
+  "% getilgt":"% repaid",
+  "Läuft":"Running",
+  "Gesamt":"Total",
+  "J.":"y.",
+  "Mon.":"mo.",
+  "Noch {n} Tage":"{n} days left",
+  "Tariffy ist nicht erreichbar:":"Tariffy is not reachable:",
+  "Verträge werden geladen …":"Loading contracts …",
+  "Noch keine Verträge in Tariffy angelegt.":"No contracts created in Tariffy yet.",
+  "Wiederhergestellt:":"Restored:",
+  "angelegt,":"created,",
+  "übersprungen.":"skipped.",
+  "„{t}“ ist wieder da.":"“{t}” is back.",
+  "„{t}“ wurde vergessen.":"“{t}” was forgotten.",
+  "Art der Kosten":"Kind of costs",
+  "Anteilig":"Prorated",
+  "Fällig im":"Due in",
+  "Alles":"All",
+  "Ohne Kredit &amp; Leasing":"Without loans &amp; leasing",
+  "Alles im grünen Bereich":"All good",
+  "Kündigungsfrist":"Notice period",
+  "Vertragsende":"Contract end",
+  "Wechsel auf neuen Tarif":"Switch to the new tariff",
+  "Keine Termine in den nächsten Monaten.":"No dates in the next months.",
+  "Alle":"All",
+  "Sortieren":"Sort",
+  "Reihenfolge umkehren":"Reverse order",
+  "/ Mon":"/ mo",
+  "pro Jahr":"per year",
+  "Braucht dich":"Needs you",
+  "Nächste Termine":"Next dates",
+  "Fixkosten pro Monat":"Fixed costs per month",
+  "Zahlungen, die im":"Payments due in",
+  "fällig werden ·":"·",
+  "(Ø":"(avg.",
+  "pro Monat)":"per month)",
+  "Pro Jahr (Plan)":"Per year (plan)",
+  "Seit Vertragsbeginn":"Since contract start",
+  "Monat":"Month",
+  "Jahr":"Year",
+  "Plan":"Plan",
+  "Zurück":"Back",
+  "Weiter":"Next",
+  "Fällig":"Due",
+  "Verbrauch":"Usage",
+  "Zeitraum":"Period",
+  "Ohne Label":"No label",
+  "Voll zählen":"Count in full",
+  "Teilen":"Split",
+  "Je Sparte":"By category",
+  "Je Vertrag":"By contract",
+  "Je Label":"By label",
+  "Kostenaufteilung ·":"Cost split ·",
+  "In diesem Zeitraum fallen keine Kosten an.":"There are no costs in this period.",
+  "Ein Vertrag mit mehreren Labels zählt bei jedem Label voll. Die Prozente beziehen sich auf alle Kosten (":"A contract with several labels counts in full for each label. The percentages refer to all costs (",
+  ") und ergeben zusammen mehr als 100 %.":") and add up to more than 100 %.",
+  "Ein Vertrag mit mehreren Labels zählt bei jedem Label voll.":"A contract with several labels counts in full for each label.",
+  "Ein Vertrag mit mehreren Labels teilt seine Kosten gleichmäßig auf, die Prozente ergeben zusammen 100 %.":"A contract with several labels splits its costs evenly; the percentages add up to 100 %.",
+  "Keine Labels gefunden. Vergib sie am Gerät des Vertrags in Home Assistant (Einstellungen, Geräte, Tariffy, Gerät, Labels) oder lege sie in der Kartenkonfiguration unter":"No labels found. Assign them to the contract's device in Home Assistant (Settings, Devices, Tariffy, device, Labels) or define them in the card configuration under",
+  "fest.":".",
+  "Verbrauchsverträge":"Metered contracts",
+  "Pauschalverträge":"Flat-rate contracts",
+  "Kostenaufteilung":"Cost split",
+  "Anteilig: Jede Zahlung zählt auf die Monate verteilt, für die sie gilt (jährlich ÷ 12, halbjährlich ÷ 6, vierteljährlich ÷ 3).":"Prorated: every payment is spread over the months it covers (yearly ÷ 12, half-yearly ÷ 6, quarterly ÷ 3).",
+  "Fällig: Es zählen die Zahlungen, die in diesem Zeitraum tatsächlich anfallen (monatlich, vierteljährlich, halbjährlich, jährlich).":"Due: the payments that actually fall due in this period count (monthly, quarterly, half-yearly, yearly).",
+  "Verbrauch: Bei Strom, Gas und Wasser zählen die Verbrauchskosten, sonst die Abschläge anteilig auf die Tage. Kredite zählen anteilig.":"Usage: for electricity, gas and water the usage costs count, otherwise the instalments spread over the days. Loans count prorated.",
+  "Alle Kosten im Zeitraum":"All costs in the period",
+  "kein Abschlag nötig":"no instalment needed",
+  "Im Zeitraum":"In the period",
+  "Hochtarif":"High tariff",
+  "Niedertarif":"Low tariff",
+  "Vertrag":"Contract",
+  "Saldo heute":"Balance today",
+  "Zum Vertragsende":"At contract end",
+  "Empfohlen":"Recommended",
+  "Positiv ist Guthaben, negativ ist Nachzahlung. „Zum Vertragsende“ ist aus dem bisherigen Verbrauch hochgerechnet.":"Positive is credit, negative is balance due. “At contract end” is projected from the usage so far.",
+  "Kein Vertragsende":"No contract end",
+  "/ Jahr":"/ year",
+  "Ende":"End",
+  "Betrag":"Amount",
+  "Bei Pauschalverträgen sind die Kosten bisher die bis heute fälligen Abschläge.":"For flat-rate contracts the cost so far is the instalments due until today.",
+  "Hauskosten wie Abfallgebühren oder Grundsteuer sind Pauschalverträge und zählen in den Summen mit. Die Kosten bisher sind die bis heute fälligen Beträge.":"House costs such as waste fees or property tax are flat-rate contracts and count in the totals. The cost so far is the amounts due until today.",
+  "Gezahlt":"Paid",
+  "Restschuld":"Remaining debt",
+  "Restsumme":"Remaining payments",
+  "Rate":"Payment",
+  "Zinsen gesamt":"Total interest",
+  "Hochrechnung":"Projection",
+  "Kilometer":"Kilometres",
+  "Die Summen der Tabellen darüber zählen ohne Kredite und Leasing. Die Kostenaufteilung und die Gesamtkachel enthalten sie.":"The totals of the tables above exclude loans and leasing. The cost split and the total tile include them.",
+  "diesen Monat anteilig":"this month, prorated",
+  "Im Zeitraum sind":"The period includes",
+  "von archivierten Verträgen enthalten.":"from archived contracts.",
+  "3 Monate":"3 months",
+  "6 Monate":"6 months",
+  "12 Monate":"12 months",
+  "Anteilig: Jede Zahlung zählt auf die Monate verteilt, für die sie gilt.":"Prorated: every payment is spread over the months it covers.",
+  "Fällig: Es zählen die Zahlungen, die im jeweiligen Monat anfallen.":"Due: the payments that fall due in the month count.",
+  "Verbrauch: Bei Strom, Gas und Wasser zählt der Verbrauch desselben Monats im Vorjahr zum heutigen Preis, sonst der Abschlag anteilig.":"Usage: for electricity, gas and water the usage of the same month last year at today's price counts, otherwise the instalment prorated.",
+  "Filter aus der Übersicht aktiv":"Filter from the overview active",
+  "Aufheben":"Clear",
+  "Keine Verträge für die Vorschau.":"No contracts for the forecast.",
+  "über Ø":"above avg.",
+  "Aktueller Monat":"Current month",
+  "Vertrag endet am":"Contract ends on",
+  "Folgevertrag ab":"Next contract from",
+  "Verbrauch ca.":"Usage approx.",
+  "Posten":"Items",
+  "<div class=\"sub\">Keine Zahlungen.</div>":"<div class=\"sub\">No payments.</div>",
+  "Kündigungsfrist endet":"Notice period ends",
+  "Vertrag endet, Folgevertrag ab":"Contract ends, next contract from",
+  "Vertrag endet":"Contract ends",
+  ", Nachzahlung etwa":", balance due about",
+  ", Guthaben etwa":", credit about",
+  "Wechsel auf den Folgevertrag":"Switch to the next contract",
+  "Keine Termine in diesem Zeitraum.":"No dates in this period.",
+  "Die Verbrauchsstatistik der Verträge war nicht abrufbar. Die Vorschau rechnet dann mit dem hochgerechneten Verbrauch der Laufzeit.":"The usage statistics of the contracts could not be retrieved. The forecast then uses the projected usage of the term.",
+  "Nächste":"Next",
+  "Monate":"months",
+  "gesamt · Ø":"total · avg.",
+  "pro Monat":"per month",
+  "Termine im Zeitraum":"Dates in the period",
+  "Die Vorschau nimmt die heutigen Preise. Verträge ohne Ende laufen weiter, Verträge mit Ende zählen danach nur mit Folgevertrag.":"The forecast uses today's prices. Contracts without an end continue; contracts with an end only count afterwards if a next contract exists.",
+  "Noch keine Historie":"No history yet",
+  "Die früheren Laufzeiten eines Vertrags erscheinen hier, sobald der Folgevertrag übernimmt. Archivierte Verträge erscheinen hier ebenfalls.":"The earlier terms of a contract appear here as soon as the next contract takes over. Archived contracts appear here as well.",
+  "seit":"since",
+  "1 Laufzeit":"1 term",
+  "Laufzeiten":"terms",
+  "Kosten gesamt:":"Total cost:",
+  "mindestens":"at least",
+  "Archiviert":"Archived",
+  "1 frühere Laufzeit":"1 earlier term",
+  "frühere Laufzeiten":"earlier terms",
+  "bis":"until",
+  "Frühere Laufzeiten":"Earlier terms",
+  "gesamt":"total",
+  "Saldo":"Balance",
+  "Keine früheren Laufzeiten gespeichert.":"No earlier terms saved.",
+  "Archivierte Verträge":"Archived contracts",
+  "Sicherung heruntergeladen:":"Backup downloaded:",
+  "Verträge.":"contracts.",
+  "Die Datei ist zu groß.":"The file is too large.",
+  "Abbrechen":"Cancel",
+  "übersprungen: gibt es schon":"skipped: exists already",
+  "Datei:":"File:",
+  "Aktion":"Action",
+  "Nichts wiederherzustellen: die Verträge dieser Datei gibt es schon.":"Nothing to restore: the contracts of this file already exist.",
+  "{n} fehlende(n) Vertrag/Verträge aus dieser Datei anlegen? Vorhandene Verträge werden nicht verändert.":"Create {n} missing contract(s) from this file? Existing contracts are not changed.",
+  "Ja, wiederherstellen":"Yes, restore",
+  "Wiederherstellen (":"Restore (",
+  "· gelöscht am":"· deleted on",
+  "„{t}“ zurückholen?":"Bring back “{t}”?",
+  "Ja, zurückholen":"Yes, bring back",
+  "„{t}“ endgültig vergessen? Danach lässt er sich nicht mehr zurückholen.":"Forget “{t}” for good? It cannot be brought back afterwards.",
+  "Ja, vergessen":"Yes, forget",
+  "Zurückholen":"Bring back",
+  "Jetzt vergessen":"Forget now",
+  "Darstellung":"Appearance",
+  "Sicherung":"Backup",
+  "Sicherung erstellen":"Create a backup",
+  "Speichert alle Verträge in einer Datei: ihre Daten, die Historie, den geplanten Folgevertrag und die Bestätigungen. Die Datei enthält persönliche Daten (Kundennummer, Zählernummer, Marktlokation, Benachrichtigungsziel). Bewahre sie sicher auf und gib sie nicht weiter.":"Saves all contracts in one file: their data, history, planned next contract and acknowledgements. The file contains personal data (customer number, meter number, market location, notification target). Keep it safe and do not pass it on.",
+  "Sicherung herunterladen":"Download backup",
+  "Aus Datei wiederherstellen":"Restore from a file",
+  "Wähle eine Sicherungsdatei. Du siehst vorher, was passieren würde, bevor etwas angelegt wird. Verträge, die es schon gibt (gleicher Name und Sparte), werden übersprungen und nie verändert. Nur fehlende werden angelegt.":"Choose a backup file. You see what would happen before anything is created. Contracts that already exist (same name and category) are skipped and never changed. Only missing ones are created.",
+  "Sicherungsdatei wählen":"Choose backup file",
+  "Gelöschte Verträge":"Deleted contracts",
+  "Ein gelöschter Vertrag bleibt 30 Tage erhalten und lässt sich hier zurückholen, auch wenn er in Home Assistant gelöscht wurde.":"A deleted contract is kept for 30 days and can be brought back here, even if it was deleted in Home Assistant.",
+  "Keine gelöschten Verträge.":"No deleted contracts.",
+  "Labels":"Labels",
+  "Art":"Type",
+  "Kilometerstand bei Beginn":"Odometer at start",
+  "Erlaubt pro Jahr":"Allowed per year",
+  "Rest":"Remaining",
+  "Mindestlaufzeit":"Minimum term",
+  "· bis":"· until",
+  "Kündigen bis":"Cancel by",
+  "Erinnerung ab":"Reminder from",
+  "bestätigt":"confirmed",
+  "{n} Monat":"{n} month",
+  "{n} Monate":"{n} months",
+  "Preis":"Price",
+  "Arbeitspreis":"Unit price",
+  "Arbeitspreis Niedertarif":"Unit price low tariff",
+  "Arbeitspreis Nacht":"Unit price night",
+  "Arbeitspreis effektiv":"Unit price effective",
+  "Wasserpreis inkl. Abwasser":"Water price incl. wastewater",
+  "Grundpreis":"Base price",
+  "€/Mon":"€/mo",
+  "/ Monat":"/ month",
+  "Kosten / Jahr":"Cost / year",
+  "Zahlung":"Payment",
+  "Erste Abbuchung":"First debit",
+  "Nächste Zahlung":"Next payment",
+  "Kosten bisher":"Cost so far",
+  "Kosten gesamt":"Total cost",
+  "Empfohlener Abschlag":"Recommended instalment",
+  "Gesamtverbrauch":"Total usage",
+  "Durch PV gedeckt":"Covered by PV",
+  "Netzbezug (abgerechnet)":"Grid draw (billed)",
+  "Bisher":"So far",
+  "Hochgerechnet":"Projected",
+  "Gartenwasser":"Garden water",
+  "Abwasserpflichtig":"Wastewater-liable",
+  "Bisher, Hochtarif":"So far, high tariff",
+  "Bisher, Niedertarif":"So far, low tariff",
+  "Letzte Laufzeit":"Last term",
+  "Gartenwasser-Kosten":"Garden water cost",
+  "Abwasserkosten":"Wastewater cost",
+  "Ohne PV-Autarkie":"Without PV self-sufficiency",
+  "PV-Autarkie bisher":"PV self-sufficiency so far",
+  "· Niedertarif":"· low tariff",
+  "Beginn":"Start",
+  "Anbieter":"Provider",
+  "Tarif":"Tariff",
+  "Zähler":"Meter",
+  "Kein Abschlag nötig: Das Guthaben deckt die Kosten bis Vertragsende.":"No instalment needed: the credit covers the costs until the contract ends.",
+  "Beim aktuellen Verbrauch ist eine Nachzahlung von etwa":"At the current usage a balance due of about",
+  "zu erwarten. Abschlag auf":"is expected. Raise the instalment to",
+  "pro Monat erhöhen.":"per month.",
+  "Abschlag könnte auf":"The instalment could drop to",
+  "pro Monat sinken.":"per month.",
+  "Der Abschlag passt.":"The instalment fits.",
+  "Es droht eine Nachzahlung.":"A balance due is looming.",
+  "Preise":"Prices",
+  "Einmalposten":"One-time items",
+  "Folgevertrag":"Next contract",
+  "Außenzähler":"Outdoor meters",
+  "Kilometerstand":"Odometer",
+  "Bisher gefahren":"Driven so far",
+  "Erlaubt insgesamt":"Allowed in total",
+  "Soll bis heute":"Target by now",
+  "Gegenüber dem Soll":"Compared with target",
+  "Noch übrig":"Left",
+  "Erlaubt pro Tag":"Allowed per day",
+  "Dein Schnitt pro Tag":"Your average per day",
+  "Hochrechnung bei Rückgabe":"Projection at return",
+  "Gegenüber der Erlaubnis":"Compared with the allowance",
+  "Minderkilometer":"Kilometres not driven",
+  "Erwartete Nachzahlung":"Expected extra payment",
+  "Erwartete Gutschrift":"Expected credit",
+  "Preis je Mehrkilometer":"Price per extra kilometre",
+  "Gutschrift je Minderkilometer":"Credit per kilometre not driven",
+  "Noch kein Kilometerstand: Wähle in Tariffy einen Sensor oder trage den Stand im Vertrag ein.":"No odometer reading yet: choose a sensor in Tariffy or enter the reading in the contract.",
+  "Die Hochrechnung braucht mindestens zwei Wochen Fahrt.":"The projection needs at least two weeks of driving.",
+  "In diesem Tempo liegst du bei Rückgabe etwa":"At this pace you will be about",
+  "km unter der Erlaubnis.":"km under the allowance at return.",
+  "In diesem Tempo bleibst du bei Rückgabe innerhalb der Erlaubnis.":"At this pace you stay within the allowance at return.",
+  "abgelaufen":"expired",
+  "bisher":"so far",
+  "mind.":"min.",
+  "wird angelegt":"will be created",
+  "offen":"open",
+  "aktiv":"active",
+  "km über der Erlaubnis.":"km over the allowance at return.",
+  "Eigene Farbe für {l}":"Own colour for {l}",
+  "Symbol, zum Beispiel mdi:car":"Icon, for example mdi:car",
+  "Offen":"Open",
+  "Darlehen":"Loan amount",
+  "Zins":"Interest",
+  "Sollzins":"Nominal rate",
+  "Effektiv":"Effective",
+  "Zinsen bisher":"Interest so far",
+  "Nächste Rate":"Next payment",
+  "Datum":"Date",
+  "Zinsen":"Interest",
+  "Tilgung":"Principal",
+  "Verlauf":"Progress",
+  "Raten":"Payments"};
+const T = (key, vars) => {
+  let s = LANG === "en" && typeof key === "string" && Object.prototype.hasOwnProperty.call(EN, key) ? EN[key] : key;
+  if (vars && typeof s === "string") s = s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
+  return s;
+};
+const langOf = (code) => (String(code || "de").toLowerCase().startsWith("de") ? "de" : "en");
+const VERSION = "0.12.0";
 // Schrift „Outfit“ (SIL Open Font License 1.1, © The Outfit Project Authors), gleiche Datei wie im Car Dashboard. Lizenztext: dist/OFL-Outfit.txt
 const FONT_WOFF2 = "d09GMgABAAAAAH4kABQAAAABEvgAAH2tAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGokKG4GFEhyEfD9IVkFShwg/TVZBUlAGYD9TVEFUgR4AhQwvbBEICoGIUOtMC4N0ADCB3i4BNgIkA4dkBCAFhVoHhwAMB1smAVHBNga67bYBAKcffRoLZLBt+OnNYgAVeRfORkSwcSDmgX9Ls//PSU5kjM0Ctl/TNA3MJGWu6mqOhpMJjl69fYTurl4HxsC+V1F1NLEfzQZVm1CuUAwiPmZYiXF0GFOYTsmghiQV7CXfcKZM+TZcm2TjssMkfgwGl7QUhM0ORt82irww786YFU4we4TpaLjbOFnR2Gx+/0aBd6Inf+6DilwyuZCRVyLoNcsA2/VBFBnW4y15iP8/+37VPvFVukdSrqQMlQH9RH7BqiPS7X/2LglJCAFCKC2EEEIMLUREBPSHUAzViIhYGgFEQERARGwgIUIohioC8hBDLZaODRuWhqV+nhQ7NiyvQR/s97+Zs/vu/U00WWiqKYuFJAaESKZmEqVb4v+k0743oBlppJGBNw478JG5uqswG9/9orzqKqoJcAGTOGQ7toCtoX/6e9ie+4Ik0TzkJKiZpmn8Y2CBQMDNH57m9F/il5zJu/PkJCchCgl4kHYdUtG1Ezcy2HfrN7VOpT6jSilWLPvB/aGP5t452D1KCgTGfS1fQBhTozr/ufnfDRoKNaeKv1Ko0QeFaJN8IvDM0CQtZagi2vaLWhnxHkY71tGWt+uZ7T+zeqvx1fhqgOcfu7f3Y05gz0KelU6/5T1pipVbqAvMRQD+wM9pr3WowiiEOBAh/n++ROxb1D7EsYQAKVAKlBpdx5ROrbczLz1vdyp0JnZ3Vf9nZsKcz3M59rSvu2c3RrOZjBHBqKkI6sf8BpEKYx7CiOCuQ7hZ/wNUDKlTcbqu3b12T1XYu/dNT8RWtCqYFU2wEOKEBIKY79vm5SNvZCxNQ7AiE5HbeTqcaGBAmga6iV1dXdj7/+XW917SWpf62i6RP+JeElI0wUPDmVmZsoXtqAtB7vjAHqElbS2wFmJbgEURP2jEZq6wR3wmhoFNdjNLyDQJloAzSBwKhRKfbIJ4nJjHGIxEuC7OKYw5Wz1APhAlHc9/v7d+dt4sQncTDynLT7X8wiAMzt+5b4YJG7KCRw5T9RQ5WxwaFEJSvyGrkKREacH/3+ustu/r6YII7pbsCt+unpmnjo+J6rwcG6tz3k3Iq149/Y/gSx/hD9guCZniA6bORxTVH6jwwRWwJHxADolTx3ZnUyGFC9hTH1NVI7D7DNXR1XFCiK7JcReXIZ59Covl7GZWq5R2vZ/VfvbL2Y///Vqfdk6f3x/4LnLX1uwsTa0wINQ4OfPe0uvzid8CJ71AHSK1pCJRhmWEAUSZio5RiQpUm5KzC6ZJCgkSHpFD5LCpH57m+376zJTc9p2liBCEEcYYMQghhBCuMSKY7POr6/drGp9qqUzyJlmkWNDDZTOMTV2+wyhAcsKQ0gaTUCfZWW0ZB1/mCBxj7t8zsTfGtrEIEJGIEO8bjm9tjvTgOWoQGiQaQn52aFiM2A/8+t+FgEcHYBiUHiiLMJFDZWbEx7JgUM8JCwbJsAsIBHg4QIJ0DUBLrGVCSbgRYGHAR5yFBIcNgKozHwkODYCqdQsSjPkFUDWXIMEwL4Cq/goSDG0AVLU4JBjiAKjKFCRIzwBUkYEEKUl21sgYkMfR2yZ3tYNh4Oy2zlmNmbQ0beNnVaY6FQ3pv1bnRYjLBA3etNsas6wdxxCI6pkBSUPNbt1oBRdqm1fXXtpMfaXK77yFCYQM0WYAMWQIMWYOscSCsPEhjlwhbtwg7iQQX34QqWBIqFCIzGLIEkshy62FyEVD4qyHJEiGpEiBpNnS+BTmentXkTETcO+8h0MQ0IIQjRk3sfSBRaAcCgGUXQEPA8cDe8JhMCDsjj8oCBV1cT5rgYQ+mv74brKPVHiS2pMcOUvLOdTnujXWxYk6JuuY4u1Ur2YHYaEr8+xe4p+lKFcYWxWzL8PsWuUG1VsU9iPhYkcuCavHCLvSmaucv84poADxu1/TRkLcJmeekZ+tnGPSo8iJooieY1OyVLmczrI8yfO8EZIYY4oZsUgj0ormZTHKqE6tP0EGitN4ElOcx3zJVQVHESHTlNI8naWckppVNrnIbXH50qpqj3zCcBB4KAoYKjQI6NBjwLimWViLdSYRU6g0VmwY2LHnlpdtO+x+75XnIpWpUq1GQb1GLbTSoYve9X6UK244cM8jL3jFL7cWkUaC9DLIKAtZyca3fulPGrTXUVe60a3udK8HPelN7/rQX3G3nR3sZkKDAoWgV6AXkAK7INZpEWqFVpFJLBbrxaTUKCWldmlampEhspAs3aXpqncHFbx6WkMbDhobyF58iuj3LYQOZQ6NTNZnYk7IQEC//UfJNDpjFSAYOJAYm5gYBNDBJ4NNmDRjAfqOtZf10REAmQoIGHz7xkv6OP/Fmcw+trsJ8y91TS8fNTZfG2stKvpJNCoSPQgViObkOAlqbkdD5EGIxwIN7kLhjQqoMKYXQOVSkTYVLYbLXNWoaiW4ql9A3cEH6i2uY22HIYLdKDfV0FiTi5kPPNFW2+2w0y7ECPaRmggNxggJHucchtqMhBwegErlvCEhxZaHtIXz5cqjzE8Rb9SuX+CC0dveU+cG5pyQe6oOEBKsu7hu0/gG0tLp1ItZ8W+8Nk5+dTWGqK1EcEQE9Ao0CcFFqGRtZehdDhziSkhCzTstynR0eC1oy8UkGIolMawinWUIJYm2mMduHZ3DCRGHajdYkGNddS77pABMbBiptWOh/vfEuaZ8naUP4z3SQ32km7qylZ1ei20/d0UtuObVouY3q5lNxX/XVI3Xs7pb5+tYdYW/Q1PVpS5lpVeJ1YoquPIqUfGLVcyiYr8zlfGMZChH0pTKKJNeYssKHh5cJMU9TuGu/ynMUDFAf/e9zxz2lH02WGWxCjMjOdaELMQhlKeFDMnw06QX7rtoAK6+lEC94B0yo0Qbj2GwFTy/96/iCiv656YqmI269a7a34loMjYp3nNWgFQUlaeXT4VfcWisygUWleqeAAwkpiu0Fk1X1ZMUTBpZQzk9dG0ORbKyHFaR8urpk8GIVrCgFTi0Ap9WkEgnGjrGdEY6i+Angkmr83D7QADXgMzSfE2yTppua6a1hYtYehwzjsR0Vbe1F1mixKdDKTiUgSPfiQdVpFbrO7zfguddFEYq/gCpGPr54iqWdRgzMNVd7IoHLdwaBCeQE9Cs7ahPChbx3KYKpWIGaMqNPlXyHir0+1lVNMsDDPLJ9ZqYBjGpBJ058wWq5DLN/SeqDY9dQw0sGkTHqorm8D3ojCTRGCBRFnNomEgWyhl4fVGxt/wQUypcRGZqcDH5JL2QGZtpLgNiZ8kn/o149gV5bbu0Ym+G4W5V0Wz8E7lLaAOnhNYp9QyRm1ymAd/98BjLExYxTbmYLtNDOemrotm8F8Y1N1qF6lApDlXhyLvwYIAMBc2haW9dmCLD3pFiESoSLi6q2GS1dthIo4Bkho/TrFqzlupHGsiElg6Jt6YnYzqhsN8J2W3HVhcNeth3NEQemC0iGQyMJFPfGFg0pgmtMWOxNwFd6WaeFsIrLCEsbZKMjfBpokAYxBAuUvjAqMhzMix6MQmn4/B891PX9XOXwKEO/Bwe7GUmBDzAKpgxBL0HyqUSR5RmGUQHYMiwVo1/vNZ78AXNh4dSmBjunffaVnmqfYxuwgvWIrtr/eYE03a/6K22K7RIV99vjza3f0Z6/HWTgfaXnO/vQ16j3SJNMP0bJXSjAdDybvLPz7Nt9xz/sPL5/W9teM7L7UyZNfcIepbqdaoa3jiu0fnonMemvb99yw9/6h7BZfq/GsgeLdu2fBnVr2ut71WjjWN0UdNofdee8+pgtHT21FQurRX5p913/7dKAz1z0ouDVjG6bOUSCxiNtdsqXBw34WUnvze3502V1m7aerHVta+mW916XLb6kM5m+MMAlr7HLko6U+RltyLQU7HXajv554cXvnER3XejmdNLu76/Ff9yFqjYNr2etMTnvtK7tT0zpdFMlXPO1042b1Lyuk/w7pvy8v2u922RjpO/v992uRPUVaXQUN1PcM69E9jPt/IJ5yY8c8dvwe0nzj+MTJwo9eOW1itAEL9VhqjLC3W/qkR7Kvtai3w9yb050yNIrWtTXi05i9bt+f69133KOfS4un/raPI9y59Q6P8rWY6RbOFeR3fcvlVqujXu6tE0Ul56CyhlqjlGV2P6guh+nZ6BTqfe9IwZ62o6R925W2r4xMLERl+TkZguQlm70j7O2f3Wmy3TXiuVixHtG9njX2+1o+pR/aJfxXRWM47ypkseclXSdYFj0+gsUE5Ng0JPkKZh9kTdxx/GtjtEj62xEBRXJqGiwkosCHQwbYYMzYj5BUvWsHJbwQTsg0MzAkfDOJephFyR60Ba1OF58RN8dFWLL//rnxDCMOUSqHqBBbRE7qllmRVwK6+PEQu3DkPiDJdQT5EoGdGmQlua9D6fYdvKttvpKvlwPQ0O0XXKRnemnu6Ci/RdMuSGYaYLOgz73kCGozwdocUkgFjwaZkhSAgl0kFEjXZxAzb5oZUVekFBpQzoQjksWP7ISDHoBnRk5LwlPXHpDEnpOt10RhHL6Ubl2OlCQQZf4MaXaGG80gtCjfhq+RwLTzheczxy2rOCT/Hz/E78k0HLjtNrX+DW7o8Zgd49iVpCtG5FE1vhtycRxPUXWn7Pf8//RymdGHJRezffyufZxY1Q53Nif6XzDScbnmv4IXWc/JnYgz/ZPlTn/pzMx9s4lkPpF7F/wW7Y+rru1+hjW03Sv9ehv5ral/h/hRT7Wuzr2DUbxBuYH0b017i0fDXc2fLLcFPYIhn64mA87DDBsCA0YAwBGgee+HtRcu8O5UWmgI+IgK/IgX5WWs+/IdMvskmacFtkiGwFXTZ4ud0KrFAnPbYtqXWaCKzXEojXGUjQHUjUH9jgcCDJUX3jnpaS00PSem5ghjvu29q01A4/PftOJLvTjoymSAB3+r75KTlQhSU8BWkkY8dKDX1rlJkf2ZIL6MONREKCAEBC+aD5wW3QTXH5Un4UN0oqahpaMN3mtrRqoM9x1TJMaQ/SgU5duvXo1Zf+CAMGDRk2YtSY8Uxg0lSmLWKCmYWVjZ0jlzATZ2B2y/Wr52RuD8fu5mgAmBcLFi39Fo85VVqWSe2yGAC8mlR8bF4hAcAvSCEwQaAwOAKJQmMEsTg8YR4itbMwomLiEpJEEllKWma+qX/R2MK2Hbub98THeln5+V9pPgUUU45OBVW17OMgh+Sz0T7NlLmo9wRZ6tfoHUARJEEAJNBfz+goXINwAEjLVhfLCtmk50R7Spnpbs85J2d6gViN9GKGfbteQqP7Zc2xGnokPTa7mtFFrLkwAFwGwyGvmazE8Bd9VdLGFLnUWr1hN5AAoJ1+7DdPDE6/aSZmFlY2dg7Out31Q+gaxI/rtfySjLzx+Gf28k22Ysn7FJziyWxQZodqCkoqahpaMN26HnzMBAb9c6O4wTRNTDCzsLKxc3D+Kxfdb+F2v1/LY/QwzzLq/Gu2yVZZd/d4E823eYWu5/EHd98jMEGgMDgCiUJjBLE4PGEeYg8AwiSKmLiEJJFElkom+vgeHibK8cihQ15TQHFeUiyTlDelgqraLzwt6bd4ht7Ee9Zl1/xFLxtMTevjEHYAMudnShRKSUVNQwum29wGPuqX6ZN2EoYp7UE60KlLtx69+tIfYcCgIcNGjK4bfQaAsYxjwqSpTBvFBDMLKxs7Ry5hJs7A7NxPuHkCAoHC4AgkCo0RxOLwhHkItKwwdV+WB4gkupQY4hKSRBI5axFZJymy4edp+e5jmTTZfDHLlrNtx27t6cnKKyimtN9TtkhFVNWyj4Mckmb6XFTxOgA0Ay8LSrMeTSGUVNQ0tGC6dX32NsUM+udGtFSb9jHBzMLKxs7Budnt5sLfHLsebX6yYNHSt3tEbZVlsfeCN/tI24iPdT+/KRaAQGFwBBKFxghicXiC8Px29uutooiJS0gSSZGR0pw03I3a8uxgOd7DOT7qdvcO9bt6Pjt/t5hdiTE3/kkzftFTiVPPjnjaU7ieo8ZDX5HYFUHNRfO3dvEtz5xpw4OpHZQwCkdJRU1DC6ZjnNx8huyiHLvrPQ2reM+8xbLes+qlm+eWrXDkBX/L7qNelMP1EgfVkffdt9W19kyznHYxIr7c8OJHaT3NrcjwjEB5z5aPWUZ50bc0updVc8KJ0WjUSbnTUyo20oJr3Au19khjnaWbYTY8XyAevpub9jkyukxTl3dviIl0Vs/lA84n/b7++i8R8nw+2gWT12s8jep/YwGR5TjNzuJtCqsjQp7cjGeHwDvPVu7dugu1I0SsupbbPK09fJt1zq9VHVzPKzst9enkVS/rjcjWgnLSxCJQRxPW9ALDtP0iG452Lsw8QRHf3dBXQ4cOkMJGZBNoHBjUyxrPaDqcYnJrdOck3LvaM7pj4bwpRHLTeNvJEy/2gUBhcAQShcYIYnF4whA6AlY8WXF/wZMRCUkiiSw1ZC4EUFZRVdt8nOGQbRqKoUhz6wTprsfhiE5G8ivGywQgUBgcgcyqYShFYwSxOHwESegCPGHJlehcvd7ObZe7Qe7hvgciiUYkhriEJJFEzhpZJymy4ZPu8WSyyJ7sDou35EZGgOBcUVYDdKeqlqNDJnXy5QKOvkLvvEd6wX50mOXEon5qkGYWL5/JD504AQeBwuAIJAqNEcTi8NtCH+kWRhhVVExcQpJIIktNab5GZY2gUuurVF1T3pQKqmqbG3jGdiYIcz6laX0ZhBgvd+RXTVYJAIHC4AgkCo0RxOLwBOFcbVSiIiYuIUkkkaWmtNAnvFLN8/xuP5TpTnd3NNBRvfAVPxf8HO0aQ3jSSJvIHuTYjR9752IuHh2qEhms+aWe27E/hbNccu5OpvOjFkMAAoXBEcisZhbKhxaMIBaH3xZ6Xy3GrFEOrjDu4NOw9OoBamBN3YkkGpEY4hKSRBI5a2SdpMiGTzrrZLKYNmFoBAC4hwvV/l6Or3E9SMEpNrHdKBVRVcs+Do4O6WfpwupHHjw2PubEhplsyOkjAfAr0sx0/pAbNfhP0Dx0Ng9wlC/DvSuq1x3pcoS0bjEyGoFAYXAEEoXGCGJxeMI8pNt9UtjvtWuvReWBriKJrieGuIQkkUTOWkTWSYps+L0WjSnfFaVLRelgRenukx6k4BT3ZDRKRVTV3lbKA6SO4huo+4Sx8W5VM7sS5HZYg4Hbb36OpWN66TPBqv61wF0l6r+R+XSV79Tz7Y8xVA1J08GP8gbAScsB8FO/ArI9TCGXd+zk8YEookMqSyQaqsTcy3XBXCmXi38DCtPQl0cg156aZ/L0Ms7+ssoqqmqfBz3kTvosL2OUSk7ZhZmFlY2dgzPuuHh4YFm4copX+LKScu5n2sUCCoHC4AgkCo0RxOLwhHmIbvQIi6iYuIQkkUROimSiH9hjj/7kfQqqmPJ6KqiqHf9GYOCj4UesXtPoj0K+NIDejFYXEnOJohfmhEphRHc9WGE8Xpl0dtRPr7WqZN3muXL2wxOVxiPNj32Wx+E3+lTteBz56YbHzZEeGiEf5KmBs+TtDKmpFmQbBZS6HhUTl5CETKltp2fqn/INnegEwUEgUWgMNlwEIwJIJJGjJKNGEzpDJlmj2IDLFo8dvhkRIEg+4HhQGBurtzKi5DYflJuDi3EAgCJAWQBVGlAaANVuRnUHgcLgCGRWI1BojCAWhydUSCY8nsdvdQaXA3QVSVQTQ1xCkkgiZ42skxTZ8ElLMomnTXy0Y4xxpYCSgDKASgFdFBtcZYCOqloD4868YVKvnUbkV6SZVx4e5bloZP6z9GuQOwO4mT5Nq4HB6Z8bna0yTMPEHAusbOwcnMddqF7KzTfW63jYPmDRDane+sIuECgMjkCi0BhBLA5PSChNwjrdJ9pNEJ3EVFxCkkgiNxFEp0GIEEmSJFmiyqhWvc5MD1Jwik1ShBAiyc7h0cGUos76lylf4yvPfCPQ9z+RB/AM2W+X8s3DNgS64Buidb/R1R0lFTUNLZiuUXkc3dHfqN3lqe5jEmYWVjZ2Ds7/6iKLjNxa6uFRdAzCmKvrZV0HAoXBEUgUGiOIxeEJDar7Rr0NOF1FGnVdbn0lcZGQJJLIWYvIOkmRDT+lPewYiiAI4jSxBFQGOO3mCrACLAFGKYqiCIIICTwvEhUVBCIJIygs1xMYbXgo+dYirQlLfe9qJ6PF8EQuGdU8WuRbZvKoLptn+z2o8sLsfrBaI+so+XI2S4FSWI/YZ+PnBqnKsY7liZzdA/eJpPBZPiB7TsZLEkP6ZCooXdFBQUlFTUMLprtMn40x6J8bqfSIaR8TzCysbOwcnJMLxrvrd0u+uQyZx4LFraXxdKwqmyxfjldpTYcKvnW/UO4UgEBhcAQShcYIYnF4grComLiEJJFEljrY85G9BX4SpZOcHrFq+SAFFNMoL82tE2S0QbmvZofYlA3a01FASUVNQwumu2mwKk4FnfeWMeK94EaF5NEoJsfMwsrGzvEW0oObKJOyakaDPM/zfKmEUEXhVO34ZyW1qa7lwTSKU7cOBAqDI5AoNEYQi8MT5iF9nRD2iSImLiFJJJGl9l5+R4tGlRroatuO3UYV8b/F6uqlJi3IZpXeDN0oFVFVyz4OcshXG+JUMBzlLDrnkmZ2bzEiDTea+M0MG5eZa3Pho9p16NSlW49efQYMGjJsxKgx4yZMmnLJjNmn3UTIPnaXadxdVfrlKAv+MEqOXpRS58XHdbSXdJIhNT9lQne/IhcW+Y+fIOL7ikH1ciEox+0jhVJSUdPQgunW23Jgk9p16NSlW49efQYMGjJsxOjcaD0aNSYZx4RJUy6ZMXvcje0Zj3d0/LKujfDqSj8w34krKIjMf2X8TAAChcERSBQaI4jF4QnComLiEpJEElmq0uwtn13f1Eu73Xnq2KQv4h5h167ZFgt7lDQjclH2jpcL22GMykLyof5h8fcYGI0qKhcXlfPIudpXy6j4TkWlxrcTy4aO5/hw1DEbwkmN4PaxfoSfThC74XDz5deC8ofcKBwlFTUNLZhuXZ+fJWTQPzfqS2DaxwQzCysbOwfn5MJn9PlXxV1xIxYsWmrUe7FOFcmE12Ux+OhH60K0EQgUBkcgUWiMIBaHJzQqE6n7REVMXEKSSCJLJRN9ij3dGiarUIOe+Wm/pQUpqGLKm1JBVW36THNhsm4ike94uym1b065bB/9ivUzt23SeZop85+lCfJEu/O5eg0i6RU5t1Cs3rXuo8H1+eSuYqDGdbfTAAAAAOgRBgwaagBAkfsbAAC6UUyOmYWVjZ2jCaAHDahUwyUAGGOMtRjCggWmZjTUFQKFwRFIFBojiMXhCfOQRIPCIpoY4hKSRBJZKunXwWQssvmakC21vbUzviTJ67HuVqwTqAcpiGLKFqmgqpZ9HOSQnT+H4xtMoUu+Y/c1Dc81cMEy5vjFCxgZPO66amSHHOZ+TMUo87lcmqvgVx+rzIGS673i7nvqZ+Bah2Vk9v/W4QiISLSQUR7WBpRfqrcCyhVQ1lf+twTKEWYWVjZ2Ds4xpx2V4R9VeNPldL/YKy/J37vk6LovdZ45CfbHanl09Ogdzwqwx/DIPeO8cMtbY+OXK1Zit7ujpKKmoQXTresTEmfQ3zh/Ebo2+piEmYWVjZ2Ds6msXUzZsLhdVMHOlJO6KwQKgyOQKDRGEIvDE4RFxcQlJIkkstQt6fdJFYD6DVQJqAB0FBtrJ/T90OBaqVPBXuMxLYGH/SijTgZW/VRrT+uajvmVmsn00Ej/CSIAyvZpwBHj2zBHLeNek2vzsPedwkLHLEYLrw+3yJ3Uk9OwAaY50InGcGahrGae9fCaZsG5CEFTyQmneG04bmVdvIA8hvJKaKxeL5IWGWBaagwukbDBKPsI7Jmki3XizM5t+Oz3iUoXY3OiCr0V0voovJmoTURoz6PljAyyw1Y+0JkcWWkic8XUyXAXGN0NyuBgoPusDURgpLSCvKHnjiT2Ayz2xx0abq35mSTEhb2hrLV+/c6LhLnbpT/ZiG9G8r5181pen/3Ld3L7uuKSPtG3H3VITyIISRXc37ICA59PjvDwDzavDRvggFFAQYahEn/4mdujb7mDgAzx6HS4cEZo5tr1DTT/P07ACNl2JIkShJBJsBNl9sYTSMXZEf61/ggsGNFDtQ1mqa0wETJhZDJgQiC4ECslZBcR0ofQt4LcAUs9GVihio7avANMomb8afvhOilh6Ej2zY4qVC34cnfMkQsDLkk0wVhUZoYxxFJ3uyypwjM6VL2yPwkRjsFItxEHPwlMhP3YHKID8yCzIREOgZPszwr8I3eu0gGwK9DP2+5+GfQ4+NpBBU9o90DXp2yi8cTEEzd6ptpZ/1+xJaD0x9Ofs0+fPK+qjjrqhecv+UhFLIfAfvvb6tXw9LcUGfLepPS56rQ3HhpasVTPNrm3MiMuueOtw3zCQ4bdd/2huh2AAuEIQ9nuNkci9GjW4E+dThpwRb0StT3n7zP/y3ff/PDSZaeBO9TTpl/HN2vN3OuEbvlBgE+OOOYDk7e6aVyWYntdLNJ5vD8oiIq04ZQLQSo+OPPrVtDgrt3e+aJSLoUxVa666mlkUUjluHIf3JtucB21A7Q9RsEU/7/zVx9DC3665oanCiEQfQQQG4BNwMnAnggwGBCKqBVHpNK4R1/8hg7BIODh4zSeq/x8jRfIH6dsooLJsud5Pk/xQtXLVa+k2aJnm0ygAPGStZ/WOnTxvxCuGWjOnzxrjMqnEn0/lR43zkjOVM5UzTTPlgL5XNPc9vnm+cH5NQulqGZBttC40LSwebF1cf05xVLvcv3y9tXW1csvOa8RqBWmuBaeCa+GLw5fFvElBLk0ek2sEmvGLokTdmH8YqSVujB1cXoWJdYKej7mS9Oyjc1i52O3b3cn7MIFxKXE3TuL5FiLRRWpra1jbUXO5tq4kfaK0A1LsAeOdfZI0UMXitrlHgUqrcq67qHuzT1d5mWKkn1B7xWaK7XbtTu0l+mQi9ejA+jN6C1YuXo10SDPI3GTbWf5jZu3sg8DAmL0A4keiBYc9/WiLZcB5f+hrdyWXfW2+TJ1XR/pCu8b21DV9IhHGiwY0AKE4kI0Iih3JxKY/rg+sYooJvdnD3U/o0rUIJ2DFyOT/zPQ10pYZ/GlaEgfiJKJTr6ld0XJ5j3Brty85bJAAIaxCLjxF2aVeOnm2hB1Jm0VXPF71JDD+XG2UAPlQ8ttDfRNTmxikaNb6ye2cXaggytaKWatu8Iz/PpKKBnAudgILOhwNsdOHf4LjFxcVE5lKE/yrBBOwMnsBUMyNCNrOEanMXRgh/XBmY9aP8IZznJr/8EobEIe6nVFloYFAK8eM29AQ6m+Y8B3YJ77g8xQc+D/Z2+/ycbG7TjRawF+eOfA4vtrUOqH1pet/akfXPt+s69AEHA2sMgL04B4FD4DcbsqPlr0vEYXdLhj1JCL+g1oN+KgbvU6NTjkmSeeanYJQqVNhy4mQ0aMWbDEYoWNQ8CBIyfOhGZxM5s7D0d1OeaVPp948uHLn1SIUAvIRIi01DLLrRRjnTjrJUi0SYpUabY47IYjXvhDk1vuue2+m6746KosZ710zTfDnqtRa8r/Xdbqu2rZBlXZZ78WJBgCMiItFDQG9OhjMGfClBk6azw2uPhsPWLHlQuRmeawF+9/vMzlbR4xCT/BAgQKsliYRcLNt8Jaq6wmt8ZjUZJtkGSjzWKlmyHaaWccd9IpJyCgC4MwUZB3iE+0IjV9qoV1bB6AqLo/B6Jm6VipLj0oNaS/kqa6g2OtT/pQsA1QHZjo2AwJKJVp97J/+eWOPwPxJmD4F2CvP4BqCig9gBosJ6Vqaqw6HNYttBT0b91cHSWUUNk0bENNrBKnbl4BU6MJpixnS6fXTSpANanHYtFSVN0l7CMaqeNruVPWrR+MgABHQaezWf2keopHXa6wl0QLea7eVWMPVmsRTaYTXNZbtOho3UajRxtCTEeJ9eimBOoHoNryVuEiEWtNdIT6KJT3mtSxlxEsSxHDXNvi48hDEd/QKFHt7Ij0hprUhTGzrquhtgkAx5bkRBenrpHrxAV/HSc22BznP+wzBEdHQPNLCjyu3CWRymtDfvgDRWNNhvi5izxozDBoBUTQ6VbJC/22m8NJyrAcfsxIo3MAtfceYdUGY9hwcjGklbLcJx2vzeYH5ag31Uo28k2Rp49Bnz2wJTde1/Psdgfd72hM4Ng3IaleQ8fqpz3LJr5BfQSt58iqqEobnS63dYdGolg5xasy0xlT+RCrO82FHrPq6eX8oLJoiv92+oaoYx24sBGhi13RQduyJLSTaDsbK1J3YRhDqZRaBwNj0HKP/CfEXj0OxH9JcOH0Wfsni1xOVvtk8XOvFZDxrOAzow/wkzDypPOMcAN4hp10RIyerqyTVCjWxUC64Kdmp6QhzcaUfqUcFVwZO1lgSUKBjkmqbajpB+nD47i+nX149lb3tnI0uFmgFeFUU+Sh3/BkQ7Smy27n4pDsLO8uLF1uVNCE4b+Og6vh35vC6yOoPCE2OmZTQkGnMFUbUrJ5W7oliuvLr7biZo0flbBA9sfpZOuEZrVPzo6/xEpj99sN/Td8EV1/muZl0vbX+K8HRerpDu+9Tqqix+B+GtnBjsjQluUf5cNfEuWZ96aihSKae/Kwkc855FG3cGgkd2a5pIv2ibwtqcOSNkjW9y7Fv0r1O588UFh/zdYwPJD0Gj99Utuh1fTleUqTlfBwXHsdFgSmNEEcRkApK2pMjDv4gBlYf7g5MUKRXqGLAd8unavPEvtekLiJAsuJpwlL6YhmDN9mrmEQzGSrdv7IvfrTu7DO7VOetspwt076vbjhi6IeDd7pwyv3A+6FeYdP8tJ21b9FsT81jW8+fdu7Nz/cdsxeMVDW6qhwFVMUWw42myIbK9zMIpUcjnBVzovyMKnPfsVJhRD18od5WaPwRmZmHl9td6u/1bta0q1X98lvkZ5urbf66b+fvuLe3rym+JCWP/7745eks7gk+cNtN/52MP0/ne8ghi919blTP2v/+McfjtXuFT02I7WbRPKjxkQ8cCLNlIGe1AU7q+ycBUxMxZ2n5GjYl6cVNbwzPb+k/tjvtM+9lJhj7g5asGQiYzIDywmtJ90wK8CqmSrVg41A55u9VgXX3/FByhgGj9nNfrvsEN+iOuHLu5Vvo+t2ir42geVvjXRn1b/9DeKLW7De/aPmqe/VnddJv7cuUq0DqX1Gra9e5RioPciYX6pH1EaFyTnLDDrF/d2+3aDtzOhr0MYr1U+tuol+tjPWIp5ubUyzY4BMyu64pKv9CG/YHI2ApyUpHx7C2SCYC+/fn7gph8RFNfzF+lHb1PNzjAUv5tLf3WyfImmiNW0nbDaDqHrJEx+7XX/RRjtVXDfc5DOTd4RCXkoncSNTGMgbucSSbK60aqvVVC8jP67x16waUfxUPo+bTE7Op9xJP2jDh5cyaMd+ntZoK21Ngii8P8x8SdGp8tkNCGwQVMDTILVpyCsUv0h5hcBjqIlp1v3egmG7qQyDNpASjtCWOqojJTdaO/S1aDt9DyUye3ETqmorUrDl3WVsikSBvp1DsVzXZrbfV2nboSg1qL3PnVZNopq4rgsmLPTGNx5lI1yaC9prJpaaBzl9lRR94IyasybWdlPpBaNlhlKNJVVYSgcf1kW72sGuVTUfbC9plvW/MWq+ItRzWutIvLSJf+VM6bU7rX066YMHpWvmvxYgJ2pmfVB6YYOf9R+dUf8gQHp+dHBjHlJf3qam4LF5+/+ouVOpJ2IEM1rV/95KjWKkFCcn2yg+LVMT97OtUuU7gThtdXYzmfw3Y3ZbnyFp1nRCaXx9QmsNtBKjbU7LtNgRWv3JMmu4DVIWbIni4y6iLvNOX4Dpvzz7ownBxeRHP+tAwrsfv7f1We/11zBIHted1qzs97wk/EHrbZ9/cgs9RVKBVR8UxShuoeb6/JRK+28ZtoNE+xcRnLL5J5nxjflD6TPLlNr63AuwYYEhOohFubpe9zj0QIWJgnmA7WAQ5JgNJrJnDMJeD8zjtCVpISzblFT0K4+dsPCEP6mEmfYcsY0GQcV4lCaxEm15fdYSVzPCbEQuV0U21OOIdhPrFsX0fr4zvOqSidUoRjYAhKx77G6xnKnQydZXJCVrolrKJvLJZzyRQ/usYMrTJoblxl3cAU+4nTLuT7fiZn54OBidxEq5Xlkex6ps1qleayJ9Q5WEpKbI+81H74n+ZGYrgCbrD99Vmfn8Jnepz0QgkXf99RZaS24v3r57TK0Ek6b+qwvpv0+LTW1+OfmfVWvm4/2m5T+tXQwJZxRbXRfDSLQlZabEw+NBmYl1NmVD6gc9YdBdgitajEOQ5Pttb8VnQbDk43Q0WId9a0Fadve1j74d3syW+KJ9SFOE85vcJJNU0L2ERJO5OH6YhIWaGzxJjyAxAqMSw82IRCYYhlIH/v6qF/bt/T+e7v76mueHPwqml4pxuxQhJVCx+5qm+JpZ9jFR8fHm73ddLMn9A/Tzrm9iH13aVcbE4aJ6v+T9X+/9kblKfLl4j029UwLu9Dg2faSGsn6j1htWm/8rfzYQDlF0Nhh4TTJqD1cbg7jTkbo8zO6IlBgrkR40sF9pDA2UI4GDeKFiXgyG0MP50n7cHzxsebR2eAZjqYYpmdXPsKxhb4KfNFHcLH649qfDVkiSvphfjkeX8zlyW47ln5U+Dh9ECzn0YCgojHw+NIXew3tz0NnlxXwlChiTv2bZLvmGpD4iXhLvtlneJ8l+fdhGSQ5LDnklN0qgIhk6hOWL6GI4bF4slA9iofQ1zPF9BxbckdxyKnZTsRC98dpELnPQz10NK04ZLdmNjfA9y8lD7Ae0/qlRyT8I/kqBEcreWO8XO77BdSMqf7cxRr0o/5Mjc7weuL/yTRZdie46Pf65SPFrm5gCp4/bfYhAI0/a0/FvQdOeyYI+Ww/8/E/3jUN8IlfnUIT4F/BcBV0MhpDDudI+3B/7+ktFh4LIYq48jwek2avS0ZvyrH4mnp0wUTaQitzo3xvn72lw5KN4/DhOIRhysa8SnsczJX1Av5j2h6V5EkjmAjfy2PzjbkbbdIClyCRvmUPU+iCGkVCY+S3JO/tSE847HBBI2c/q18WFZ+Bu6TMjVIzV2zs4iPlxX4W1rcgUl+SldDbFctlk+iXJY7agNyUIggQvnH3HpZFrvr49rGxPglhsr/PK6t1jCBMq+Smk8WWQeDh6Zx0GR42BdK+VrqLuqpA3OLis122ofxEkDEvOORyRbfBg3nJRvFLCkUBgk7fhck9wf5SfoMlKGXM4Sxjs1IPyc5x7fLc48IRp8mUz/xFR/Chb82VAbfuBs/KhrpetNB/qaZztl5TFilpnWQ3+a9dsoDyunt4Xq9zgYi5tA8NGIV/Fb7RBw4ucyLG3NH+9RUFPED398n5w+fzo4fineG7r577XdeZdXZP073QVWLhxt2uC41yNMQ9LZFRW/zeOn7RKU6rzO6szFcpYzuI2Z5Ekyi4XUS6TX9EHN+/ZPDktWwUczqudgZXjP3PN71OamZrb0fBy9olRt6rpN1Yrmiab9hz8Q6tXnsAqLjdWzhF2ex+Blj0upMwTwMKOe9y7OdY9Me5mzbziFe7HYbneXiSJktNFVIoWuyEi/x33aaQCjGFmE5zX0Zgzbe5Tuv3fPL7ilPLqF2wRBFJ2edByn/uSzhFY2e3CKgWis1V2sGlP02RRBhY8Naer5nY7qyMul+BftyjlLwt2n9ZIb8LjqNYcZ2v9OJa3WLEcO0min8DzJImHeZCj710jx10DHN6G293wck4RDXf5+P8sB6n1IH6Skqvt9rmU2ebM4+aim8IrFYJCEj0/594oa2F/3kHB0EqtnMe5nq8LZjlYW+/dKyIfEdB+ZSbQ7d3fHTRRA9P13Nzmic31PbIHWcdww2I9w9adzjGOdYzVXQzBq+z+b9yxYp+fUZ3v4M2motuFFHjc7ijgWMHpxEsFHAaYoGwhgIa02iAaxs1J3mSxpFBDHwAbM/HrnvNAVtPzf3kvVsHsEmbP43IRbK7p/T8ga3uuwYe6vwLXf7itTYdBx/ejYeldrsfpwU7H47L9G8U367Ozd+KtJf3LuJ5pgcPF0x6tV6lhDBRhjCd0ZjSi08dJRamfNMU86JucIHtE3teqPmwYGkOCTdbrbuQ/RFpsL1iIAZeDKBVIu6HcTeFv7NFHq1+eaJJ3F1526mZZ8svj+cNT+Tc84ZCsCMuryW9TK8erfOEC/Wal/7ei06+/WPZ1f+86n2+d3BVOweOUQaoNt3ifiiqMNhbRqSae5i57bkDbjdESA5rsHuAcfrneeovSZvRJrvWFIYMtwwCuNyb5babOdnZbQwZl1IRoI3GDxSWSGM9mOZXKxKgQNp3idsp3EsZ4Uk/aE3pt2OQOFs6S3QUE5a3aTr8qJIX9H5Gp714RMUTwHzJjNuWdW2VbMFXMpzf6soPRLbKtDlMhbYYfT+uyl09QV05kH/8H/Kf1f5nqE6217+KjdW1Npu6XArkgOPjjl9/1pzfc1oce/+dc23/mHh1//bdvvvDNfTmYevjukrMnOtCH/7L71Qsr/gLy8gMljgLVEkyIMiuiZS3vwj1ZByVDK3W6J6R2AuMRq8XB2qT37HcHiP65ktejKMuU7NmdVbKTe07dK9q0aAfkiEe+Y/Q1O8kT6YbqrgwbwzuZcA1bIG7ehSLtlSF9yNTH2y+W78M2f1qkEnmcPHmzXP0Wb/G3uFqe3fiOvOqPFAfjzTbRPoZI70lR5Ccgn6mn2Fu0zb/rca+255lRt72HWHOWPv6N/pvL3m1rUyCY7J6PyNX3rIhMRXevfL/2Qeu7e8VKBaXRKugv+UYGu7F4A4X/BvWgLKSDRjGaxXGGPd4auIHbwHDCdmh/d6+3SklrNEqKVvb2fulQGo2K+TLDTHtxM8OipGHV7hyEmoILWf/94xO+e/dlgiEU47tvYtx3/3wmJGHqEdeNw0OuG9hgaAjIQ8OuG78Nw180uuYX14jbxfD9rMtzAmxdfj4RdhdIvLZv1O518HpT0qZqpx2RhXc/+jfv9w0x/Gry1DE5958yYremdaYEQZoSGb1t5+etldMCU1eFsJQcLmtxCL9qf/v/iE2/yOVm8VXth8E5Nzl6tJ98k7/0lpL/62Gl439NnhoRqfg1MmNAkharMZ02Wgxx0SkeE1wv9x4kyQGP21YeJp7o/1jsK5VyLb1bYmIw46k6nFVPgvR+6qZ+uaNcXPKsMHfE5ay63a5azfkcEUniOVJ15PsJYkLBclYLlj96cJTad2rrDW3XiI+1j8Eu7mHM2m819IQp/G5N5nGpWIWagmktSUKwgarimY4f0Nz9hRU2WK39Q9h7lhIWMaOmcFpnITM6aaBmGbnqHOOyUY87G+FkMuL2hGY4wU/5vyCruTyuaq/HU3M4hB2Pd/0kxw3s+Gay3P3jE+y9MxmfCsmw902Ms/fvQSTu4Yj9xuEh+w0cc0NAHhq234iB+co0/3u38lb8pvm21CIGya61a9o8AoJd/lwiSpVJbv6aCbvf1a9HkjZVB+WM3v3JSRfv91MxGKMbGMW9P4i47H06NEGQaKJf79jZg1dOW02pYcJWcrjsxRq+vL997Q7j9TtvbBbf3n4JTLnB0UPR4ZLXlLyOdvQYEamc6jeYMQck3We0GdOif/Gs9cddPiOkTTBHeZR4IVTiK5Nxrb2iPLGFUfKF59WPeVeYV5VHne+REiERQZLM4bgfz+d8d8z97UUnpMucimcEs3N6RYTGv1/2E5kNCWa0FgvFEBDZHJY1LTSuiOit9v5h7Gx7VouYJ0bCWZ3VwuuQJ0IiWa1lzNuX7It4OQLSp58SR3sWUCN1QtXym/Stt0DCJdxnISXCQwz5V/XuLxyt9smvjRO/YbnWPyvMDjsFFcEvrzt8hfc6AXu2W3K6uctVVhiG9JITo1MzTIvvPwKEn8pvGrLf1hVv/4Ru+lKM5d8SjoMc5tfyu4K6Qxtb//xPhbdVqTrvbfr0Kx+cw5r1pwzOlCN7qiX1yKtzR1MHBP9qSadIrJ2PkX/TwXkKdYFUSrk9Dfb6QX9Ll9o05HFyC+lhuOTrdqyjuzHX7micVw4lODceu9uzF8gSsohcsedV3b7E7iWgdxpVU2/l98a/R3g26vzQuq40FEJutvWNR/baaVdpwa8df9kVAxfVe05r0lHeoePHqYvnzSYEn63dXbEy1qTRkMBRQyaJ0V9b+z0yzkv5CUMMKcxyLK5Eju77SOfa65M/k6V8GgXHaozuGIYmVwpar727lXItlN60zPSxrDHTwkWKfDSpCPjZ5Dcfvu53n4qva8xPLzC3nbjx2Dfk275u9H0RRF/+lnb3txo/bt/f/r7DRlNl47a3Bwu8aHGiC+uAH/RjbZroDjS7bKr9PqH0Wf8l4Zedc1jzxGriit7qVMoK6bZajWD4MwsL/CrPAj0RBVh+VTuzMxqDcIOJ1VSwf2tl29jAGZF5h7edGdhW21pJ32Wqu1NIOrxN2a0TrhMffpM89NEPe2iTTRmHjxR2gqxSpflikTsNX/voa2TTh19qqWpvzjq9qr4b33I1z9ikUK4IJILtnT/qbLv4aoLrydLTa2p+rt9F0S0+89Rub9ta8kbhYZ3OoAJm3+dDdPeQbm7BytaDd65+xY47V9X/WuDs1tu4IrNqZb8R3A4ws9YGV4nVvXZez/haDdGpf4WhaBO9x5TJmvayHLKX5/eamP6rE9EbStrt4u/95cnd3bz38gO+WPxoMLrEZ8JHF4MRT6lLzn57TBn9qXqsR6zW9FBvqmcyFtWwkrbYzA4KJ39qdrxE4G7qvu2ik6Ij3GZ2M8VJtwHRYg/2LjIS+lhST/T8fP2W2Ks4lY5NJjhNj3e1WKKbnCUz0Wej2MYB5QbXkA0xhOJazFrBb+Dkfwx3QoIsa8uv5wg+k42WONHYao/AJGhix9fZZPmm1zfbhwboA7InbNPrT7DCyC5W9gMzf7e/x2zt143wQ0mlwX0+r/tpWWo7L2b3w7Dcv96SOz3bhaCH/4OIHMPzHLqvvwG6kMjimmWmUDqMR9LqJpKgL7FC+RAeuo+IwNA+kkSzvJno5cQ/Iv1/oLD39Wr8JkQT9Gl03U/Xlct+ie5Q8Vg6dlM+F7uRtWKwUtEb8/lYwB10XGULXnE48FLR4nKXhFQmZecV1ZcFL+dyu8XeOZK0ps3GLEkYWxq1WlKoLCPIo2TefNokoB3bsd22I9gR6JILhfIu2NcbsDN4E7u9ZbuYTW2960dahqCpnRbk2BtYUaXZcFnpeSuVjFanpGmVRkupuEmnXQDN8Vqzt5ckKBbDaZYgGS/MH21IGu/uuqQuXqffMtC1NmluI9J3s1ANr0tUs1Aii5p50mLuy5o/I7oCgZY5idGv04QRoybo1xqDpuVBJkQTCuje156IdnA/HvB3+wMX9FWRreAqPOWcrV47glD+gp9CIk8GxeuX4HMKCY7qA4le0jOEGqtnww02OuV1GwJPBIVByfMKXyI7xg/mGsIGHEd8M3i6ol8MhvSHkyW0eMOzG9CHHsO86UMp7sZ83nvToXQqMLH5/BU7a/3Xd5Sbx/7+A6XxGBxHXneLshk9RieQUu0GrpfQeHs0PvytY4jkz5JzuOWMBHxkHy45N/nmR3jFxytsDzDw63OfUq6Ju8S1P9GpxJ70ACG3cEH4r8eUQvE/CnH3YAvimDBA05ivye/42+tmAztusyfEmXSycd+bLzsEvifZ8tM2e3ZJ9Ld2wvmKWKAFAqcp9Pu6whf/ZPh45HJVx/WXryo2Vz5aJIq04tXLP9BhOfuo7HsaCvmZeFgMK/958JmN6qh1FX4kFn0E5n9+uSzr3h/EB4ZT4WC86PMW+2OXyS5zoH0ZE0Sd/JZC4A6K8vGyShV9Xcl7vMQ/ZmOvN4z/QZ3f09v/2+Tyn9+/p2Iw2IZ0nfSL9JtL3P/cF+hLZcbkF6Sj749ROAMrj/3w2nvANVbf9T88adLWdfUT722DJcd1PC+j1hu8ajtfncTC+e1dA//nQnFU+t5x1fL4e5rlvyPk379Vq+XseyWcZTW3ZaCvSr9zu8jiiZPFB8ey1n+dE3T8df616iCoOykiQbFP1QzdcfHHot2POk3f0zM7Yj1t3COONyq7f4O/i/bjfu64M9tNs5I33w5hXdipEo4JO/eP3iEcF3ZekCaF6TVgh4OApgmPPcI0a3yjbN/JxjENjeNObn3rktL4TvEytTd+8B1Q1yZc8Hhz7kh1WZjqspHGz5zIDI2TeapxLOcWj6d3mJ0Hy8k5MREGuMS8kXL4LOWMfMcb8EqbsMedVMiCVMjqVOhvg/Yn3GPo1YQnrUeAag1GXeQrxm6MRu9QRfd8q2H7hu+2gyNI60T3XKS+TR+ukoQ0BT3kleorpQbPDpDSXH0hO0z83D/b5IvPNvbW8vHP0eXl76YkVqaijd6V+mpq0PtEoXvqV8aesAwskXY8kWhEld5Evac1jJpN+fiWRNpmmk3TphmbBo5Q74pHWahJQ91kq8+b4VsmejBzit7/fq0xUx2doJP0LX1H35MPh33Bz5RfpfLsn5bP1X40KgG0etb8xqr/Aid3lcuqql8Kpc+r8wC5m5jk3jFVupCDsvsum1APRSxr4NP4Pr+XxQjyv9Ev3YsDr92qz7JKCnlItkchj3lAbJnklQXqoZARgrIoV8H+/CeDWigKuOOJY3XAEdKirvFpTTuVQRqlYNGBd1D2uSL9UyK1b++qJAt4lMhWxzctjWiTTQtEzaOppVbNj/15MoNKoxROZ99ejRBZkbgiIjUfxNnIKiDq/tyAFCkLYbfXrOVlLP5MGT7ZSCqMDBLha7kT5BhV4u7d1VVlAaNb5Dfyt3MbUIb0639SKCMBnGSZRDupNRgw5FHoouQY8lE42Vxq05XB3M3rIuDyKqeqqq1O1c161cbtW1td29dD/WgyexJQX17fUN9VfzP5a8hsnBz+HuVedFNnsjl5UfL1zemb85KfJ/9MGqpjxjXIq01pTZpUpWilzkvdkHqoeW1zanNuiqjtSj+wpQ9tRz+5NQ/9HP0TnUIz0oe3ncU4WcJu4efhN+APbf8Dt8tDhTrxmR2D8mcULtlJju68ZOdtO/+jeFVxon5zy89pJb2l9VfMHmbzZR9gvmaOM3ONzzXONjnsnrZJ9mP2V9bV3Nj1R76H39mxqbNHOtaRnrpI9DU53plu7xH/UcG7xiTfV83dl0p/r1fPOvqdshd61noH5H8woL4buv7R91b/lu6vmGvN/p73mMGBQwPTqlAnsK5SfMViB6NLdfs65f/W5J2G6jbVlxzzmrfXgpxjzs/15barH8+ddZvdu3o/7p50Rz7fO6Lx0fxYM6610oa1+7S3a3u1I9pPuno9Q9+vP9uy3/B5ATPOG5eNh4y/igumd5Ag5HZkBPmIklEJ6kavQQ+i59E/zZiZNZfMh82nMA9sALsaG8b+xH7xyWcXbB3C78R/1Dq7G7TZtBltpbYGsZm4jLiNGG8brSlrHzVAQ7IiqIqjAoCGgKOuYYOGADWCDZhdT5kPJpZjPUTiIiAZlykh2H76rwtUXQsm9uTFCcrl6lJL/1jctrJhQa9JnbcKfMZlKgvsvvAfXVgxsIs42zK0BLIiqIqmAoCGgGb+0GJD/FLl5WKrN4QaAoCMi5SwGT/2I9DyH/s1R2o3v7N/tWZwsYUaYCBk41NZpsMBPptIfNYM4jT+Y1IwHcLIVYYooJmr1xD+pM6zdoH+L/x6isJfIx7pEYMwp/QNi9IhyFI7I3rWgLYMuy+00OOfUvaeUXYUlq/1+B1FcxxX/l8Psl1XgYkUh4YbIFrMxYsfWWt+TfSpdxq+fmSO8Zhq715g+rwhXxUqsK1WtRckgp10p0PAD3bjuzMOsZDZVfekez4kXFx1Q3aDZxwjcLTB4FsnPtQNlhjvuxSGCXEHI9tlNjSwEKULSg1b0jaFyYJxODTbJ/0nxteOfEfyHCz8kp+Z/8bwiL8dR9PeH83IFLNMx3rcXfZfcr11CNiM970I8/Vge3ZyoSw45z1BVC4yiU3Y5LLuPKQTh0Nv6yephw2wyWYuxvtYtNxwJpmwKPubi0uYWupirkU1GiX+b6qIKKDI7hZrhmmVOChk6YhTE+LASmmhOBjHaGK11DUrMhJy4AZTRYPRrV/+M2FkRnYfoehGWJYYzZ226eDAAmKxCNSiDA3LgfmFP33v/6f4w5QruzsOMLCXDMyvDH+RztfphAQk7OMxBo6Te+/XgwUdZEM3DNrViJZk4FoO4kzqnpe2yoJMp0CjZg6QsNF0pZxNRVPYQJQDORKzTE5EbhdvTIvPzX4jMpNtr/OK7dpAECdD2MpLrhHImp9EgMX4EYX2k4eN9PzUZ5RU/QyRTpF1DqsJDMEoljG7tJK6hRan+t5CyGqlp0c3nKDIj83AMfSVwsMJMEJc4xwJA7owteyiYvStUQT/zykRu6y0O4d0DPMlnHzQVjpOjUD5/P1AQET0Iu5hE9hAHRBgqdQmFBONceq7Qw62jCzjT+uaYLSEIOAlFbL8MW/dPTqwUAfohV6W5qmn5VvicQ/s1Hd9Mzv8f/QP4edTt3QMSMr4RctIvdEZW0lMsWVtfTw9cH4sWPeb4h2wLsf6Yl7YSnc5BHJziXE/GheSDeNYaU+68Ixwu8B8xEEMU6czy1kFLB6CHLtUIojEX2QFJqlvuVY4X97WezbOZhOiRz1rHCWt1HquLNUWFz9L0Xa5/T/6pNFyxaJYRYvsj9Z83prN3oorygEBoVAAblUWtKwNs9zffOf/hpzn2LabGSgm37/6cxbil/pr4xYTmagZZ69vc95sexyA0jYanLz6lKVDwtXbqwESNNUiuN684n89NoAAPbhwkcJFDuXJ4LgXb5OVHmeHv0pPht9C9dJtcL1lHJhVfgPtE+J+/MhCpFYMhZymrMq6ORCnuICBgtDQ8C5T6UP2wzWDwBsGyCuzVklwPtFikZEPcKBgLzl3drnbY1ljNs44gQ62I1K/9+md/aC02XfubIjUv0zahOdUzRLsDC+/8dcLQREGqg08HgwKWX5tZY2WBQI0E9KUXCJEg+no7pCDRmIIRsm3zvi4ES+J9UWSgKCh6Lg4RvE+bp4cMA+OUP/Uhu5ugErK5+J5EDaB4pC70ER0+NIuUOyj6/W68LGbMj/94fwVrz2xuAgOEFF3P6hRc2izPxmX6kKca7Q1SiFkqPtOCxCjeF9391J7JpwGAjurQGFcrIR/bFb8Dp+BhcynXa6rGH5QPdY0qj61uPj0bvBjXKyyft0U/Yc1DJUSvzTnaU48nY8YvBi20AscAuNfeX4fTQjFZ0AtahLPYgSc9iXeHEhCIbTTtaSnAdEckDBhyRIPcecpzBKMwEPHHAoKO60apoTyFiwOxZdyUuiXUQdEAsy10DMk7yyI2Gjic/zfxpT0Lzky1US4G4gw+bwiezbDccUcA9IozfO3QNHsOHocpZdMf+7TPs7T7vYF6v2WbcyVb4vG3dqm8OU90ZZ3ZtM/hf+L+qX9sIdePYVAMLWGe120kjB6DjoxQTFZl5PhcIpc+2q3BAVEBl3+QFE2UEBEti1iPTxFTOFO5Z9loQG8aghMifCpYu863lWU8PHk3qHHTGk7uJSBLPK/gvxUpAeICPeeW1wvXvq/0mq4teEBBSqt1lpchEn3wWgtQ1txspVKxCtbmxghe8Tw9dAbZ58EB8geZHyHDEpwMFGaqasiMB5VfFP/MuD/aidJQqiXHc8S1JjE02dioHL/HE4+Sybile3IOK2f4KOpGXseL/jFTZp3OjuR6CrBhvybY6BKw43pM19wVXsNWEWv5tC1QohSjOIjiOB52avT09PumaxBIQm3O7RYVyyCg1Y3epHBMGUTGD8Y3/B2/m+T80T5pamunJe2zW/OmTZrBtBztadZuTV86cB0iIopJ+jxAC3f9Gu3OjvTxwf6alCjMe+Cgd8l51fgkWOG7Dx7XsHRCMcBdjdcpvQ5FX6if6QvTMAEkubas4lIT0PH2WYDUzLRM96dvjl5mWmEi+DsjoTUHXpov0NADXaXoLmEwPlVN67JajOmVUmQ7/ytloAQntzsOmotWhnpT8ZRzO6TRdQKIeWT3EVyw9PjbXjLj6a2vC5rK6c3+IrZp2+8kgAePHyla+WrfocdRUEUhsGTOnMWswKXY/k5msZ66IXEpi6c0eaCQhGU50RFgociOUupw7UWfdtQsRhQmmtLZd0jUTRiPxKKOMcNIo2BMlY85NIVGy2hmhsErmkIk/myELEfqJv09CTczKLW7HChpNyt7xk+Xyg7I4fg9s9OjY0MHgwDHcSKxSB9dX5H4/J6vRobwG4YIciSpJLZ9h9/9uPBVgFMXBfwuus1ze4DWgC1zof9x663wFsGAoA1IPrzwh9sI+hVwHoKIAVmTbvmbodQjDSCESl671BP+NSOiqTEl2FmUxd0msDYLbxhD3mLG7bIa9Zz5L77TeGgFaRYlF6PZdlDsz6TWV9ilW+vZI+H5WpD7+ks/7srr2zqhT9Mj4RfREnpJHAUTi+ArKDD8sjGkA+yzojvuvpMkyGLYxiUfsW5mWf3gO/eqSrrpoZ2Qgu0HA61FN0jpfc7l2hzD/lazvJBHDe5dD/kkPN82M3Qx586Wg873oivfXCn4fDZpXP+zl9/HTg5NqqbVhdHftXjQ998CRzIF0O1SWawy1W11reg9kHH8uoOIHeyHMdXIwhm1vI2CEU8iInIT0ddzmGoswcm60/OXk9BhT3zwk8x5tZxDKOyKhWr6yRYCX2OIjegUuM3mwLYEHpR71nHrtajyN46kEmlldAwIFwAs16TIat9GMr6s2d+lm/8l+b5PeBOyqGyVosd63mwstmVqafjEf/3QZZ6v7cKEFNLazd9xOx1nDlhJbcfQLDDr3gOg97DERhW4Ct6NYb+U0QP+geK7t+eeTt6C78WbiD2+o++97qtOyCPPJV9aam+93m17wSXWO4wQdFxoUicJBG3O0ITyeOzcMZoygx6rQD50e8W146aGggPyixdyBJbLiiGim0S7jukTQduDYg3LZSOESCZ2l/bJiXIB/nVoDPm0MxOnp7T2suf+8IhZ6NV+asYUBBbf1D7qU/9OuN79gCOpkwiSlA3aojfu/HRoAC36IxtXNkydbzEHzsnSUXbLRTsVVl1oWEYkwB9WOwG8wE74PLJ9rrCdnknwz7ljYYNez1hY15NmFoGngduMPAQeEsB7IBLXTxTxiu6ziQ0QxdmiTtrQA91VzdzBdeNFafDspZTa8rh+cdLK4sMCJkXyZKo0Mkap4S4weC+Q3YlFXo0FudJmWrnyBK9vtzZ7/XStqJXqtXJtJUO+EfyzXHxzJEjWyZOlMqdiFR6Fx1oKutzkJdmCe81Lu/AhiZQKbIWU1kCYcixz/QsQU6dMEtOkPVR7YIGjFr6euqACh5LpShtHwtyqeX3MA8fTeOnXLUIgohmu5jpVvGzcP4v07KcO6XLnWOIl9pK6lLVWdTHobCixUrmH/6XsgpXMbCbFNkfMqGxcdq2nQMpuGIRuGVNy8pM/Tff/t8hZ2h55UYGiuDGym81NkKeLa/FEohOQEAK6hWXa+czdwUhPYJRrFiQFoLo65cBPnQyRtEMP9pwuRB2nOzNzlLynp7f/W5hnJp6H1YVWTaNoGKTgPsOSdJ/0NQo+uRoAiBPRPxwz+BHKNRnN5sdXqRm6lzPRilZ6ep4zq3ZHzLWTm2//Pd/x2WCdiavZ+PzRDYXTnqGoI5pREm3epY6Ywe74XIr2EwN8aBYFE0mB9Fl7/54GQ6jOWOZ5ixM0fa7D+ljQ1dbEZyjubbcrkrirqGYCV+CsCdDYRo8coJSsJGeQ1esnDV7t3yyti+5HlRGIScohMdVzjvf+Ortp3eQyQvJ/VF2LLLK2jnnEF7x4oTHzaAnKxvB6nLWdloZmXAdy5cFguaHy/bpSZuyajimzQiU5Oupd73J1TWykRXYDFut3Kow6ldPPIxzVkqwRfPI/OT1aFrk2h2aQzzcaRGvZlTspH4xN3CM5MKQotZ76MSvl4MyQu0YRigiorq5uhT1waEpTLlteLUkiku/fWOKrLS3TzOfjCKZ+t1rDAEw2MUi6Nb14oZLKI3xALSvC0tsY3IWwTJHaxcyF1v7z7XXHzAAJp9sLxy2xTsf9p9eejknlKBk8EOFcpzP+uW1Ck6w2sBP0J0KoBhv5IsFEUanj1iMSDQNf3Jg/6c2MoOGa/ND1clmo6C+Y44+b6E3pCCs1rRjspxMon7wlU/OPB0Ee1969woAboPHsNoKg6Edaiz2nFGbXrUyOUj/RXFSIz5FCRy22fw4Jmxpx+V0aNr0u3EvBQ6t+TyKXtO9gXl0RyimVTaC8rxIWUWSYqTrQmHWjUo9keUUROrTOC9fzs4OZJeSScRs3BqEdkcluYtYi5+aPKqyCrsGeT1eF5/fsTx5fHRqxV44/ks+vb/CwLrqqLqku7tBBIui4t7jQ3O22LFDjsKBuIRPNbGCLMmarUPeFgQ7AHXUcWldIpo+95nuOMdK69z3RJ0IIFPRra3Ws656RR+PFsG48E8rubm723FMTc9kTgzhEm9rXCzCigzLixJsAtKvdOLK9uuMt3NcHQ2HY+n+nFFz7hRwZ1wh+tfH8qdCgPfMGnuafgHxAof6iAA1xRzq4ROeMuftmpsNfMZlTSxYXDUlt5sNXCkdq0MwfKBnztuZ48qN5U2zqTisqXL2GuDVbrHRc41X1mWEj6mRTTY46AKWvAzmECXs3Aq7OAdWA1nwaj7Z3mzYRa8/bLe3erkyaMAwpnmmIA6zBC7hN7md2VyDWpVLRrGBmkAZJZ/XiFs4P7dpNVnWFOKZ0LD0Xj2S3JW2edQxW46AmtjaO32ezDlb5/sutmh4vBuSUCgqx67bc8g7VKHkxqAp0RcquLRl3wI0bfsHZUh6ctNA0v4hCXKV+aCu8szBuWuqZpHr135IS7XHVlXZmT4/8+YX56sNFciELwVVjG3D41oMAxTzVIyThjwAmQK5cHPbMGWl2tF0pE2hoCO2nOsFparkVTMmJpYeHalCTZQ121dt4rU3sU0yj2n8+E46W2IYdjT9ldKncMzkxhq+VJ3puc5rPzifro6mi8Mj9QnJT0x/ZWbjlWObTtWu9oykREHIuKjXaJJpw8fwxzxCCWrGHorAfA14RLikJQx1tf91EEWJ/czGs7m+vnyd7cUwwE/wgnZYB1taMmspW2tjw0SxVDimElw/2qrDswd1GAQ0uyTcsIqs01OooRN44IhdTobuS5+hdCxJVcke1hbJcN6rFucLid6xot6/0Urvch04ULpfAwiIYhEh9nWAxhMC5fUw9ukJBOufKevMaVJavuEir9HiEJh7Oc2AqA9mh233LoV9zMsu54GNsPGq2o6Hgs2iu2oRVmWd5uCt2h1v8SvxOMJFm8fFhwu/h1tgKvTzh49hUAoITKa/uHTmeGYyrUJ9/UlvNL1gu9smhee10qX8sj3/PWEOPA87LuiLNF+mmsHXGzIHNjLJZW1KBzgUr30Rc5ASRGhD0dOpS8xhULRNbPdzYsMbJR3XFJIBy0WYVbFJguO9ZD56/0TJHvd5rBh4Bi8xtKPZCi28cBSo3Me1882QWNVrrV4Gmkt+LLo6WqmeaTdPum2HDieFtnmWljuEk1QyJIERhMdiUXji2IydBlQQ6mcmf/jbhcum6upyvBUqbEA+n5sQ+7Ja8nl9cDTfGbOvzEycmtXYyp793NPPoJXBlX6M9YDmk5/85fLi2L0bsLUDFc4lzsTgV1a0OMP7BXQHgR605POLIlrNdwOBcUUTC85sYzaMJo7bdOsRNV3K0dqKWz3wsIh++KqZmXp5g0F9pxObA9PprZzRrf7wSx9/DNZWcBdKjRmRhB10iyh3HWEuKIyRKKcMWjROMQDxrsGqBdc0Ygzsjw2K2ZWNgIZB2OugCIb3wHaQ4ew/Nn2xRN5UTVOXFaKr9fBLAfdGW6LeOQ+b0jj86Cyputdx+aSIz3ZeyoKK2HLqaxMDOXE7GMLL5XISf3ZsBjSkJsYRhEhEmpSDacwf/3j8QM6E5ZSKrqHhqQWHm+FBtGafmsmO0RJh0WMy1CtI3K5HhyFGiWi7i5zgBE5Du8hV2gdtLW6LIVBys3Wk4xf3jchZJCyPrJJOLh3Ed526kEhujc6VJFwAgeJU4jcp1BIMfd4bLG8v7S4q0/sLJwldoqs8TwGvVTCowhw+TF7mKKnfu2sIZaEQDXvJrY+lsIfdBVAkZv8D362TDOTe2i+epHuJLX2RSzldeOA6VROiI99nwow082ObAiuWKrbMIhVN51NoHaDHyGDo7B4/2gRsNQdpf+udpzLrecB4GYFGa71Ct8REgZRTlMgxdbAroI5rNMqekYlJUsWmuzbGlFgV0XBlDGwPQRRh6EdaiQE0sl+zStvbx8KT9KKx606CzmG1eTeSSefIFDGuiwkQC4RAOZ9sLx426jWGPetNUyoPLHmSkcgh5Y2FVh4sC66J7elhWd8y/MSFvnvt5207wMXsNVpaRg2AXeIWsRXdpxPjntDYtZ5+Q4yfB0is6ib22pq+a0ZVDHmONYuB1w3Jf77OSZ97moI8C/QUb4SQGrPXuGGsfNePC9+Er794FD3WaqaZmCvFjnsi0roeXTWtBRyqkEKVLTvcQbAQxbLyOQQJhFTZNTO7XwoMP1GuPbrp4pMQxBkDvUZfwdr+PDiY+RwF0EoyxY2QR7Zjfxk0/sfNWYAknWtiLxsYyaX8A9MRrodM0DAU9EOrP23d/lTqvTlwZryGK0lw5pR5hl15yEAQFPPJ9troTB4Ys+vSpHjDV8IdAriQbonPAZohG9/BN4LgQLACb7yj08/98y6XQfMz3KM8/zn/VN8aeADukdO/fUSsP5vsx35j9P72S7Ct5FoFL0BNOd/R2RnWirLdGnaC3tceRuVipXd9VJQtVxsJQsGRcVU0aYpcegTDkKU5FKtDKARwhWQ3Ya6eUF1h8+IRVvamYNyBwqyi7SNQSqkpnFd2pMGAgka60hX8xD4WKhggmIaVLu+ptGFpTo6c5/41+139IvKwN7g3XB8RdX3hBng4Xm2AnkZQWlIeDaeguS3ojkogYOzqspVlIyGPMB8RKIjcDjpHEDvoZnxbpVkRYQJ3eNXYzFpMZfe5bEmf81Z7ncHiE74aIicb+EF1XqS2bGTO9RZ+ut9Z7YcKCu2FoZCy0kNwldh/hdpfK9k97eIFDsq2VTxERtJYvw1pWVqp//wbFfNYdh/Oxrv18sh0LhtG+Rk1hgYXbd5hW2F24xPSt9IBDYyxgLmV8y1Ku5+Z/BhZ6YAGHAs2XgcEgsoWTWJ7eNu0PLpllRXG9wHzGFfgcV0UnzB6GSr7p8y6WB2gm6UYExwXl7PIyttn37pjZz8cplzVNAz89KHevfz7YE306VMEmVvOEbnw4jujFwzZxox4GJwiUrueY9gIVM+2r0BgS2FZFGM1WTNPZyRfGIYXwGtqlDkjVxrRUjqKt+4rLpqGFVenGo+KZ3p176MSlajbuj+oNHFp+ZqUHbw1nNYoK3cpFYuiACqT/hgpe+S4JcTANr/iU89NFnmgb9pqGP1rkg0j67ekQzqMSuphL58gh0aDQ9pj49VLVWg05D2QWl+IP4FP7uv9hPd9Ciqy91PhmS+yLpZvvYisAsbbttTQW19bXB7GjU15o30OCtH/VaH98Z6b9MLlw9YOJn5hZntxVdovsE1NXKgxDJWdXoS1t/0F0h4u5QIEUdRgoqOOjsrvzpDNWVB72Ftrv7JQuFS56rjnoFZdt8EO7YZmVZbYNf1pVGp0uuZpNLdrOuxTGJmXzdTooFr5VE7fA4E8+c5iBdXOSy+9cfyD+l8AzdxawopMu2OKPaq0uezRSLTVUotYtPqUHKux1F3syBRxJd27zVYJyaJaRLPFyoRb/RhWHz/sm6hU1P2DRTt7jvpWPmFxSSO16Yqdp0KvdCof7PVHo9eRQKMWqzT4CY/aZIl7xMOGDXZ6ynu+AvbCp16MnB4qPGSxPirt87b/4SkQ3Y7+Zv9+ESoV3vG6523zkHXWXt9GVOqADUlfjdWWWoxUmfuzgVdscXMshdiWs4HDfoxNvCHI8b3hgZhYQL5dQt+ouFf+Sjq5y57kqOhlttho8sc2AE0rm6JBzDuI6jXN/Vsc+ngECxQu6w9vpaGqJwy54nKsfJ91Ouby3xcDVZ/Obm6tgv6nJv3UDtz4ItFmzoPi73AiiBDdvFh44dCa8HuYy9+pAR6/de6Z47EGu7YkStY9/pmlMegW3DUUfuCHk28L25KJnvZsJtnYw7dfrmpn7KQyj7uCdxM40OkpfkMydOhHa/ViOqm2fwlUp3nX6UciVFz1nU4alFu8dkWkmpZlyOtRad5Ca5ZDoQaiBNMA5iRFM9HosxOFvF4IKZ/SKBOV9oip+OeSZXXpywCCTAPNQEXPWmKVwc8l9BVDTvmcne91fqrjilZB0i2LnvAzK/q0ToYtiCFKkZUgDx76OZITUg0tyC5HC6UbSyU2VELKHIQ8bt3SQ0wCgXynH0A1nHD9cFym4S2Nibi2OyPj5ZnhqbpACllBUryobs5UWVXkafKyARKukMs2a5ctAUpKxswQQbTbEMLjo1pawLAy9rRtZsYWq3O7u100e4+sKzSTD9qk1YBWGyhJto0AGRPf75DzJ3W50s1VZKR/rpw7R1XZew535JWAUkUbp2hadexWGZpMAFGhmp4kqJPnq7VGYw21m9wKFeIS3Nh9YnfWB2sPUv/KK68k1nOB9SqC/orzVDvoE/zRlaVCA3kdam+gAjBbgeJEs7jtA+oARYEwypZem0qobR3MbM4JWAwVx1kGoReCwqHwlQJS/vr5TlBnvtnZ88xqRpr9CZBkaYqCJkeQl79HQYh08x6/8Fx0/gvZb3/VtjnTSGEnhsfZCCyundnFDvBgULGN5ADvlxIJ7dQW7iQFb8jPebVq3tSYQUi6/He0mz/jZrQXQQpWqXQ1F5dj9SoRYCwabeMhKskCGYNtxwNEx743h5gyqK2rs5BrGJfj/WWkDI3mo33+9sJ0o1rIFuLtmeG/ONKDQ/6QuS/8BCgdUSlP0lfmVMcu8/QspyVCPC2tdo1p50fE820xkWt7/m1a/3lL9eSXzXmQ/c0HPgENnf8BpYDwSVNfBsRIb4Iwv7zpPP95kG91w/CfK3tQ3GG4sl7/2/yjo2BCut+ysvv6d2TPgOdajgoG20rsRrr5eMaesNbUPp6j07JlQEF1vMLzPUpPHaP3VU/TLTwgYhutU8nZcHE0O5+17Mk0COkEjLwgpPuIxGrRCdtQCUb2F/4ql9kgpxqyrnWuUqERS2JxKv0N2tc/29/8jB6hwdHyabFNo9xq8Aov5UyVbauPB/dgEahJjk4OVm4rNcCDJn/Z28qiiNU4hqYVp5OAmcqCbIREauWbL9NjUTMFi+0OUWLxYJmg22RjOzZUwlqNZJvVSdhZqOdc0mqpSlO6W+2AK4jJ/lgNN0ZV2bvmVvcpg2RQSjRk37LOFAzZtjcr8xiB4ONWBTwRNBTbHTfWUA4Q5IcqVX6a2n2CrkntgFnGK2EM7FPg2wY1dB9yh87Z80qgP7sIVHnPRRNQDxiH91p9G1yfCE/Go7OhCMbRqQyni1UYgQdJK05qGWGa4UxEXnrtzMMzZElG8rWK0h3R9bHOMm5YhfJyHoieURW1WAQTeO1aJiyD0zX56iil5hPDgChTyeca0R4TSzArCJaV5kRfTRj2UAVGohaLlfOnhdLazzMsqy/VO7myktobPcCNEjXehftYQZs6/YccqGm9rkgcsGSKRZSwqpIIQxPAjQszDjaN4BwmPUSUWJSjfERBfNNzSWLLUG4Rub9+moI9Y4RuO6n9lvV6tt5/AVtLtg7tWkaZjLeFRvliCRlBS8XFrl6hzVOcmS5YXlfci+3jqsolBaVyKi9DKnBqBuWhFwzuMnNRz+WIuQuUKQ0u5b7/CTeTqzEOOeVCaS7kO3ZZ2308lYKb2lQ7cjKiisNJu55x+hkcZiSg+KxL7o0Wp31ZO+asRcnItYOwDlOiEf/nSAapgDPOhYVVTnoYHq4hMVwRtbKeGKcxnJMu0b0VzmPA0S8F3N/hkpKaewumJBNXgFNyiZAMh2Ltr73zffPVsdEUVwLx9+7f3vFBU2Tc2ZCnMfTBupPUMe7IFDlDUI4gCaWREZctbHmP2Dd6Akqtj0xTlpWa/0oddBIRO/6f58NJ3aqSbBvgHVSWrdYHDS0T9qUGREvVY9VtQ3NLDIZ0cWEvalko3BJhBwTTYZUKORXyAw8VHjLHTK77kFbCp9UXqFUcNS5tycSGtt/LxX8zIv5VaMu6XDbsrvMLcBc5AR25lAmO8qEcCGxu+dUEgArGjxQ66tm//l1cyvP7DD36ROq3fyN72BTVbi+c4/3yl3csW0phG+xGc0vsBtxKKA+za9rFRpaiPKuKJMlpGRWUjVSPotuCd1Aptn7xTCigdglKM7tBjfWtv6md/GeNlyjDzql4kpBrFU4Pk//0PD36kudPUX5sbnYPsVKfDghsgp2WrYtjRCZL/VZV43FqNKEgOCoB47YFbjUOhbCedECsXzxjWcsWOT6zqO3vmCUdfNpo6H6JTpsER4J0rTBQj0+6V0IyYR1ecKEAD9z3NNk4bbjuONXMzajTY6g1+viGh55xbfAnrQI8Au+2eraTFNk8xSdbCIpzsazSSJ4XZSkmKyzHIGroWOIcTInwO5hPrmF6GSsJWJMwceEVpdiLnzHRPj7EeILphOCVIhpuNQao0Bpfb2/PmF6Bc2hw8EsJ93cAGCenWKoLPP9OdoDg2mrdhEV4WQ1FeuVJigCbYbPd7tERXBZucZwnS9OKUTbkWnC6db47HSwUnIbdkhP2YGUBZn/xbZxIBrvBVXNxXlbZVolr2Qqj30q54yGgHptMxyUTF8+UJPAVovrBBsSrTz2ynareDCtJVPeyNzC17AE1STkqf+aytgYFxQJJJAYOg106iWIf03ARXNGQn9+2SevhxHb6MFsyqSSYJedqtaTZzlb6+ULZ6HALtcnTB2r4q7CqIUROlmP/lo5MesLAxZConBcfCMMwMXORCwfZppy47FYq7A8oek3sE7ZMcSu9Uljd79qS3Mn4tbFhFlTbS0Gpdyp3DQ7CfPy2w2CXuUSxT25ZxD90PH1hBiGXoxaZB27TbQcb1XJ5J3HbzvHsyAn/y8qOmxx5vCE3Sut97fwlZZhlVga0pvG9YKebfH+6eoY3hNfQaZ5Fk3ibggJf7/VeNqDOHVl5uQJiFEq1jnFe+Z2Ozs535PMp2uA+eLSYzvHalfmtxPSuFgyl6yyZDA2CFSwE83O7e7vaKxxNM8HPbt66mXxBy3L9uYtLLVSmXk/wh+Iwh3bZKHsDfn72QFWS80vbB5D1MuIsHo9bx06GZHLcciZxaL8SnmWpmEKweeXY4BjLG5sJDrHe5JJjp1hMvJzMLuhY76Pt2LLL+d/vuOacubRyYiOCVizcNwaNoSGN1w+55Ar40T5wHOzSuVv7pJhl3Z2uVNqTwzz2+KDvi7iWiA16T7LLT78UOs2JvP1M1tt6YqviR5r7Wdvhg4fh8UTnaeiGbkuZAbudwcgs47i3iByiDL5PZ/MDn7AXahogkNTRUpD80UWTMEe+sr3k5fJaIFLo2vMGMuR5AP/fCBUte6gYsp2L4S00kse8jZHZcOQ3/bznGPx4pmaTf+9ofCVMyVMAxcwtUUiaO+1qpSKBf7EwiN0LEx251taii42cIs6ybzpbvcarIFIjFn0UIFYSMxklp8nNTZAFSqWpmZjOCUTmEJlFSBCmWdWQKQ3CIxl6EqlCBEfkLPpgaYlevymu4cL54KAzuZ90oXK1SXBRWXV0xirCecHfajnFWM89I68CjQhShvLD6Xq9MIirUReR3KxmaomGtEqii8hElTWGMngKKiCQQmVi9FsdHGBARa6f3c9aIPgtA7RrGtGxwJggjMjjU2DrlF+RyZBfdNgqlwYRGiQC2u2ED0o27NQ+P21x3mRKXXZBP7bKZU8adjfQblel4KiuFTw63CNMexC6US8TaO1HVnmBkqylWedssuRocAmG5YZBbLuB1i/KSXRTnHM1VBOGMnw5MlXjbOrmSFQeRGZMGmz2jekALwbvqe3PDbT0q+1yauBlkUCyIq0eFoSCNx8FYbwLRKtwBbHnKKcBGwIHNeBSKWssXDKrbMMNB0JkK4TFZrIxWx4ERbPMJAXNPp8VrawiF6Y6Lr0fG6iQfEBhXXGxuDw0RNeNkh7gVKvqgaYG9EcHgnhYJAwu1zYOpCDyb+z5f1gQHrPiYRexqPWnX71xqnPJjpxr1S92s4ACBDfxe+4Tn5j0ZuboWvROli8ddsCFdm8ixu24jOJuKmuJ6lEsA9xJI0QVmY4KGTqQRaRedtNBBHlrV2e7lVKeTw+zahIWvD4cxjFRAct2zzQf0f1YJP6jOSZ18k/a0DSBFiEZKz8W2PZpRY5Jgy1uOjCLcXetOkzvnPP9pYZ99Ut5g3NnSSnqC/Fo+WIRwXbYbbmb6T7i0AgR05hbGFJ3mjEmMkYCbVzMCVuUwxxiig/BHrx8fkJShlXTliMRtwfKlLXaBjqYsBwRaBmHykKOxc/FvCYRm93yc7tqG37FNaDxnuiWYVllYD3N98gatCx4Z6LgQbOsm+IIFZXTs7PHe08zXfVrGVAS9OT1qZbo6P8+MelJz3nZBc9kuVrlIGWGvcHAzN5lowNgf/kLuKEMi2zNVAgVNqcKMFvqMEtZUNZB00mK1e2CB7B5jPq0WrsGArTfHUwQEfPEKMAWMluGkkzzbXOweHMySV0MLhusSkv9wyJyJEGOQkHFSmyDo9GGD+Lg87Pj01Pe2rSxm1A/+bdJrWfHJE/OadsWAhe6ClJ1EHDwbz//P8KhZaXIHeC0T377jCofwUD8YuMYqYQv4+vFk0ynAuIDp/Weimg5BZ4juO/UJ/jnvdfGf//6Ha4j4Vt4EEbd+/f6XgLoOnwg+BoABrg9Ni7cTIBgr6uoW5uM+X8UPAwUIqGh7jkP+Lglcnfjtfx44GEtJMcmA/9/rDaH8ep+EO4fjOI7/wjAVEEVFV469Bm/zhS+7S/BrVZ48cgLcj3CfX36K+H252+cbxmLWP4GELLZG8GxcHgEqlKDItUkOBDJVEaSsirK8wWR5GVR0+N1O+XcXs/WDQMzB0wgAYGQvDJY3S287ONxtXXI0XScciwX5yCaMUMUaUhwIZJtdEIXk9SUyGI6yVKam1+abpabdm1uKZRmLrSAJASyv41F1HH3FlfnXbmkRsP2hXtGPtfHIwxNUTQTwSnOZ4oSL5eDXM5kwrhimgoqdI4AjKaqGDeW6JCNTCNWJEheccutWBBnqEGlwZtt93IUJr3OtXAAcgf8MOwPuCF/qKQ4uzvXjw4UCrzHcfp2ljlQ99kLAXmaKokmPE+RKxgi6ZpFfu7mafY1FuXTAhVP5OdPsyVXUu5mPI7zJW8IRYmsmU6Ibgl5c6NZoZKxXN3IZAzdtTIyjLXDmUGZToBpK4SY3bRyS9CUMilHzATkhJkzposWV9FDMd/Y+eUlfTifbeiXlufGnmEfZ68wG6w3yLAcxzJBL0P1gPZczxDc8buCEtSEVdV87hVoKpmmS6Vh8lxXQsQIAFmQbAwz99Yn2zcuGGuCXoFdIN51qyDPXaPEO+A24f4Cc5qbA9PlDgOz9MgnZWaB7M6X1YTI5JkYbAEwk/4N8ASxl7KkGGJha+UdqjMXJYaZaVbMyGTY82MoXfPoWIovFIb3Ig+kOBNa69kDy7ElG95AFNmxMqa5QaMrRhhv/YpM0NcY47KlVbYpG8mzusNyILIRuCrfIZs8ytlPJzeJ7TsU2LM+mxKVQdGQYdVLleivszq3A8/WXJQ7Vfjohu6QNd9aglW/UpqNqZIbHRGDeT6VDNpaHs3XD2NzU6kXeRHHKMaR8wK2WLYehhe0Rl8O+hzKaILAGxTxGNj201e3HNGVEwyUUUiWvVn3eaYJP+TTuCUuf5NfUHBuZptUDAbVyqztb+sI2EmwVY7h3FL87q/++kZ5Dsp27uASZDlZPZLhP5HhseuNpw1V5zeXnCYEJrQEVsaOA8xyl9Is6ysp5eSXJs0FwpyMC3NfkOFsQbgllks76eyrZGiHvmh3EeZzhmIVTSfzR1d1cs4zd/VQVNXrDEAvQ8sBNaxgqSWlxSK2D9mWWWIf80DOua04/b6H3J1pi5zhw17vAFyVn9QdMHpl0fNwtArnagw00PUJWrsASmw59Qn6DLD7UEdN7rmidAyH6GqzAoigzCu0m2iA0l/9NLTTAteRmFHCP9/PW43uC9NwT/6YUcsdHIhFs1T+h6X6UFRDOeCA67HZF3NEplETw8ZbabAlMrEOCHwTvmnr+x/0rtpTddUbjJB8wPxv/nx0gjOEomSJxteIiEu7RFPRUDjkR3mMOSH7McfUUntUKDrmcTzp/1GrX10zMfyJ/3GcF6Y5iulCF47ygu8dMFktEgctcP5kzpXAsLQvnE4cJ1muUETM1qJY5lyfXsWtILJ3imX/bI9+NvFDRPfz1H059nTHDLvNz6a6bDZnqD/8ydg0Z4mVMKc+nZ3KcItBjubJ8N/27aE/3oIcz8+MMX+hQfY7BHE2rT5ltq+2vgyYpu/B4YCwWBJ0y3IxIJqCPFZLJB1sL/wJNxeKFabKSVd7ea8jHEbJGJ/kYnIlZAvvrdOndD9zvzJ9TFF/ZdB+xYMzQpoeFS5cATdZpS5PMCJOJWKMV7nXA1xUq8IHQhmcHQ6xMCOTSvMyCZIH3XUpDcG5jDd3ioRto602Ms7+ZzJaFFeV29ZdwZTJMpW0TgWruUznMJincErIu96Zf+gc4MEE5vxyy7+MsYrqDfBJ0w3vwRY9M/o7a5cW70n3Fz8U53btI+8fgB2Mq2RSo6zhwKmC9uvv/f87ZADa4Qb8u8VoXoLaj/8EePvmB9Z5gz2ZeSc1UANkGwa7SOrQg08aYXIRkUVWwhvi0XV6bS4Z2VvP78CIHawSPp0+8U6xCKCxAz3qXMxjNNQTy75QutjWyLpTnatb+/6jueDRJspnwQXOAxfklFQt8hNuCS9x1jGlk6pyH6UDPtXwGWU2l9MbS2Eao93tQ8PxBAy7Q8FkWs7BLF1kKTSZFoJhpIUPZxEzzOaCwygXy4NiUa6AnGNq8hGwCQgxS3stGhXxY6wXJQMtmamjTovFMCVCy+oix2NErRnl9o39fhasEZFEiBUJmzVRPBTMctb0XMvQmHi3ryF+8k/YyUmN3YOSNYq3udKs1Qi2HILNjZdSYdRtIaljqUPDE/tvsOPjKzYPFwWM14b93N6muGIyPB+7Amz6ql4btsqRHQhC6DjyMS0F/+7PfrEYO2e51WrRz1tMUinO3Tx9iPcojgpL7MiLQ1UUyX+eIauMrsSdPk+tYqaV+GBDxUNa2sY3XI1q0SiWpY5G6tc6DOMbJacLbyPhCMZkR04fo9KZFj/qZ8qVQIlF/GlnWWjIMDGoP6zZZV5AgRjwMsuS6Fl4dRVprw4wjKeOcimFhNWgMMKIEkRXUYrqVvYlrmFMCV55wWwwBDh/gNBB08KCOcyGGf7OLyH2ESs68p9vL88k/usOUOG5tVG9Bl1djAA1YGbTMBNqmfum2v9IXnHYPjXYjNNa+vvVBmAcRunNXWLrD1Ai9UpNE4SSBL6LGPfOsUgIoRjB3RGOhPgBSSwxetHzvXhMyeTHoyAYjf+vivLh0FCClVMCIVEkbKv8dsFkhtD1cmiaEQKLviDcijAVtI5JJIquWiFfsnjhgM1g9Ub4oSv/0/3pnm/VZltFGEJywGE02iXvYOwOOtO/KqENy8KIrPORQt2QeZyRusxGRkkkXadhzC60iQcVBkFkjmsrTeZ0Qdq8gvJFczGDs/HlYhGYjEtrTehZoD0wfDXOZS02N8O7P587ipPkBX1/mNN6L5u9JGKxLhvYptO8UH3j3BysEY4OGfzPjv4f0LchILw+//wuieQL7z3qgVd0aml9G6BkYlVPY9TOt7gsjAZCpqf1FNVoGorFBUVM04s9Ah8ieRurQo/UOYC2BSHdHOqDKrHD1z5HJrFgMAnCUxNSp86+6D3/kv5nXGIeDXlH0wn37NsTp6Kg607U0zzw5kYCmoTND5iBRQrpAmkEW+yKOA1XsrAWvYy4rnAn3RrD+XTMLmCasTwXPGepoqROsSg11TFK8TY5BcPhdkjOCefngYQhxlQXdoWHkch/LBrOmxFq96aMn9lOxp0BLLMiRtzikZxBCcZv/50wgsuPMJ9BPRLoJjit9D7DBX0gSrNR3EJTs2TjKrse/OEdvb/+mHLdbcZ7I4uTm9d29c/Z/dDqK23Dm7NRvkg2h2SjKT016iMEm+g1IXz9s7U8s+GzfXZlZIDSp0YjSvvA8KtOE1qDa1F1GLuqiNZtzWQC+izoN0QidlHT/1/TUvSrC1SJPfIpUY+dClMlu2Wq3l5T05fbcwqc07Ghf2IWn+gfaWtQUNIu0y752TB77oZRDirpJZNUlkd0a9d9imq76rSIfN0l+0MgFvXyfr3YKAp6tqbRBDJN4UTknqYuUvbpfgPuzHynNcXihSv8EcoeUPUe47+Td3T+u23dl7a65HpkKILATckx5l0obnFFZ7RYJw1lSNjQ/2knAOItlmqyKAxchqBGBkwPypfsGvZbEIXkYbfFURSo/TBgJR61L661qNDZv4s7fmZ8dmkF9Rbr1vrY+5SIrV8DN1LJpWMRrevT/R3oBMLgfM/gp1a8GMeqGvu07FEUJ+MSE7wuQekIVUYZ7euZ2pqFiX64XaDPJvjMvTLg+YqDhltfnD9vSu2jMc/gCnRYcILa4B9Xz8hwp03zuhgDXIIF5Yd/DGdntu4GT0rO+cc6Ohqjv5xz6MYN8jvAAYz7P+8d4+nyDSmdznWkL/OycGPvnISgEwYNuS94RCDpuvwWkaPYQhnzNNsSB0YiYCAK/MSGMhz/1Wp0WyWyAdx/GKYiWk6rcTeHipbLUr3/RVSab4wykE2sFgrtrRc2TIEptFBN5dqL1b1/TDX3jIVKcyC49wySYLf2vSNSqEHHjGKLex9/eMqy/xnroD2V+beU+7PYghPMITBKmOBj6EmQNofzJumNHFM4Nyc1Mq0Ow+6ra945uXzd35eembwgeVKZDwwF+H5bcEHo1y4D853uPn4ofNmWahww/4a4n6P3NpbebI6u7lcdAdE/Nxaf2x299c+H/43Gid06hwWKnQYRXqIx8JT/0AogytHipSvh1jLgSPgU/pxPOJecQDY/XX31xrtbroBZJEa5qz4dO3lFu4ShF3od6hixMUAnROSCJefHyO8ugEOG17n7SbJgSQU16Zs42UBo6EoZyeTZqbYMhW5Mi8FrykBJ2j3G8u4C2pDnjjB/ZkfV4vC0SMjEnv7/T47aY83cBKfsoxVqICyxKiBUQCi8UHf9Y+fPRKAwIJamUCgOCezQDht7Uc8MBG7OjqZwGJ5o4WrLf0559R7MPXc8jLRUqwGEGEPdlYMJy4jfDC2pVBZCTv1n79hfA73dI8CmFDmL4eDi15/ZElp8uRRZizoXEX/5lV34DX+IoQa1d1XUy7LKIKZk4bhgotJkoBaz+bk6AjUEHO/V0GKojkJX/J3t9YXX2pEQV5s2JhAv86rK/wep4kSJo2iKU2+Kq0HbPyy3Gw5jsgi8ZWM1MFDgL9LAjo9ukZcHh8o7533pRz/m/tXdp6vlZuvF65XDkSYBLDIu4vkdL4b46I1d//PvHwXj44YC5wRBx5pTJ1CEapL/h2wmblSYO1MPbc2GKNxpGswQEZrYufexSl4xN+Kuplk2ymiXN5tfnnNXe3s1va0Hv5dcirAewBGheo3jdtVVlXVtAPx2uWjNcqFzMDxceZs2qKfBv04UBVYFOV6UNaYqUmxbrpBaRpcaDkCeoNfnDyIsHAro/pT1Ab6cngHR8J+Ox9rEROO6ENW5RjBcnaxEB1ZQukxpJwolmuUFEVTgWZoi7vLrmJUg5y5UgvOWzH4QcqeU+zg93xWmHz9QpTdnL22EWYriQnx5kEdjl91GQe2x06TXm1dDBB2aLJnOuy29Lb+banmJVzIZhQeXTM7Py6NGTTJs25Cir366vNzIPAgNutS07h9/E/JqK3hnFAjZh291v/Xb+GTjSYNb+/T41d8dCV/82NexrfVqPbr06XGG1Vo1/Dn2bTliEZeRLtKLLXThXRdsmVuHv4hFXEa6SK+vbZiRyfOccU57p9Mr+AIWgXJCB+9y87DBwSeNi4wOn+PK50xDDbnx0NySIJWzhe7Nb+cs6Ni7tU4fVOeUp7t2L8q5fTmzuOvhoIITt+eq2MoymbneC/vqvEy9020sfvGk3GYbhYgFXBszEREH23J38mXg/rir/A+X5HSnYHpKfwCY7w7XXdI5+Rdr69bnrnX+aanAAjunRABYa8VwdcVSouaiUqmY0uh6zjEnq9RHr51LOOi6XXNe71qAbbAH8yWgE0/mCPXL8kYS7nJG+1W+zMp+3+6cNS0USyFFEvEG77YJ+PAokpmtKcC02ezauZCxDvNX4WoZqilCpDqqkXr3jFICuFJCM1UrUpVKnQ3FeVLsKtTEBBHiKb0r1BQgwtbrMny0nunfwmwbiurT94VlmLxmyYVKer4wLsjKWDnfdwHhbduOY7uev5VFJzgJ0XgzIa5ohH1B/4I5rhMn6/QI5egZDHpZoEd0dnR1tbf39DYgO7yY/n0qkXAR9MZX7ayR0StZG+uJeQMST3croCPb0aOAnmyJoJW24gLCOh+4LOTzPauhlOgQ0cqeKwgkVwv5fBwe0k1kLh4xzoo4KdIJTcu+RDrxYnJOp+IHFkOJUoIaYbtaWjVbO8eNhh0ZTxkmAvT2SSJ5C58m4ASG0LjSLCHFJ4f1zPk0W3hc6IZNn+WZGWaMR0j9c9NGw8LL9kjCDPPoUmlOvNzRF6tNEJwQkfOWUrg8R49ACZbFgpjfYeFadBwN9crxQrC9J+ykgAVhfg+2ws6tyYmeiQKCggqeAf37ScdqRiIRJZzIDYwCgoIjg8fPDnftOxpxud7e4Ea4fZu1Pp0EBAVVPFM2/EAGdK9mJBZTwonWIUpAUDAHnsFf484CjR5qX6ET8XKAAGKvHxteU3olPsbrNxnHJwG++53/WwD88Gxjfy03h2RDtQIaMIAAoqPGqD87vv/f3wdIubP/VTTI14Ro953+xqWWkUmfRUJgFPmnTS/B5GR24yHR043cOMS6LL2kOAgeU7hMieSkzaNyva/rmCKRvP2Sh7rGyZHkMbsh7Xi4+IimwGWVLJO+onObmftjl85FyBfULFwXQtR8rqtf1ieBCj9z7swZKyud7cZqzW6KzCAx6oPQG3MFiXw0y7n8kIuryJz1Hb9FM31ZcxHFHVh9HuagihVqZqWq0kF4c7r+MlYDmEgMW93bKNZNYtU0bLp7sVneehSdKo8ViJ6+kNnGlmC1hkXf4VisDO+8Oc4c4Rg4L2zSheXHDFdpBzx9KpTglSIlH8lPEkrzQZKQknLfZqTtJPUITHHMjzB/zosEfj5NGQcSly5EpQOrp8b1zGkcInlXfjC3X0jJQBxGYGP4bxtxsVgTu45sJo1nzieLyQqKc8cp5kjQOanVurN1rABnouAShJmyz6f2KphFyjUKEsWSWO45H5BjRMRSyVZL6GgQdpZbvAjLV4NJamanDVum+X5nVtdgbomwvYazaKErJCKvrtEhCH2x5iDuR2PXRneILas+aylFrgw4V7hHpnYvai99i1BWlmQuqSRlUTcSwMhX0txcXv8RBPzLALoQpP2var6wi7fP8RplLH1dSDPEKFGGoQc3wzn4eTthPSPycCYjMdKS0blJ2aKPLP5+CAHNKm7HljIcmAIzAlCJRUx/gEA6S13Pa4EeMjKQWWQUYKD+eSpQgXESrSWXwE+GNCnWktgoUfTjwYvE2GA9IWRGdNh8h2C9ap04abFPDU8sEeMtXByTvl6aZKk8OHOWSi7FesluYk5SQ+L31hulWMfZAv6Ca53N0sRaP+poczFCjJTNYeP08WwunLgQEvK0TizamO+/T7WckJM5nIjMtnKTYv96Iet4JkBYXGdzle5MWe9gB5/narKtUkot2ESE77DLhueKwY4LsuT8RvFLyf+S94riig6pz935ddK6qBCXKaI4kV/c99rA2VCtQiHnEnT/yiiV7ZwBg6BcmHyWSG+5KjjU1cA+slE6yXVRs8UTzc4bfDGuuOa6GQTsORh2w023FHG/+C5iidx2xzr3lOjWY6YPXOVx37H7HogzYg4Pnry8M5fvtmG8JBvU8+t44HxvSSXfRWKTmu39BXsoTbotNgsJF879UC6UIcxW22yX6aAdei3yUbjFIuRbItJOWbLtEtN931Z474SVERARBp0LEtJCZESBA+oYiPDWaOT+p8ucRVSkjWhIB9GRLtJTX4YGnPLNd9PB1FAjjcHDBH26LLG0IziEo8EFe+ggYfgfPX36SWijWWWNecQuumTAYUcc1arNGWcRUdmgyKNUQKVQjtUmKZymFabkqgwz6D6ZcgybNStl1tLwzhxyWGgpSyvZWsvRRq628ijmo8gjzz32xIuwk+8O1Wykh2aq89VNc5NjiBmzrKtVaoSNb5mqzFVmK7XKmI1uOSPrvquVkUvjzDqObwpRtN9sbePUZBWB2X1T+uZgQoXFN00sQE3NY/Pe4r1jC+pkBpSkhiygrIsnxybVfloRxlbBvB5by6bYQiPr43RSrMtsRglP5CcbnJmZ2jc33aSNZH2y+fYYYm36RoKx1T8NEJYenps9okvCXIG8Drppdqwx4nrxDrOleXA6Av1mpqbr1V1xlt43k6LZsDdjnB+coRuzCNoRdEH2Vv/frLn07Lf1NwAA";
 
@@ -34,15 +397,15 @@ const SPARTE_COLOR = {
   hauskosten: "#2dd4bf", loan: "#818cf8", leasing: "#f472b6",
 };
 const SPARTE_NAME = {
-  electricity: "Strom", electricity_ht_nt: "Strom HT/NT", gas: "Gas", water: "Wasser", internet: "Internet",
-  mobile: "Mobilfunk", streaming: "Streaming", insurance: "Versicherung", loan: "Kredit", leasing: "Leasing", hauskosten: "Hauskosten", other: "Sonstiges",
+  get electricity() { return T("Strom"); }, get electricity_ht_nt() { return T("Strom HT/NT"); }, get gas() { return T("Gas"); }, get water() { return T("Wasser"); }, get internet() { return T("Internet"); },
+  get mobile() { return T("Mobilfunk"); }, get streaming() { return T("Streaming"); }, get insurance() { return T("Versicherung"); }, get loan() { return T("Kredit"); }, get leasing() { return T("Leasing"); }, get hauskosten() { return T("Hauskosten"); }, get other() { return T("Sonstiges"); },
 };
 const GROUPS = [
-  { key: "energy", label: "Energie & Wasser", color: "#38bdf8", sparten: ["electricity", "electricity_ht_nt", "gas", "water"] },
-  { key: "abos", label: "Telefon & Abos", color: "#a78bfa", sparten: ["internet", "mobile", "streaming"] },
-  { key: "misc", label: "Versicherung & Sonstiges", color: "#34d399", sparten: ["insurance", "other"] },
-  { key: "house", label: "Hauskosten", color: "#2dd4bf", sparten: ["hauskosten"] },
-  { key: "loan", label: "Kredite & Leasing", color: "#f7b733", sparten: ["loan", "leasing"] },
+  { key: "energy", get label() { return T("Energie & Wasser"); }, color: "#38bdf8", sparten: ["electricity", "electricity_ht_nt", "gas", "water"] },
+  { key: "abos", get label() { return T("Telefon & Abos"); }, color: "#a78bfa", sparten: ["internet", "mobile", "streaming"] },
+  { key: "misc", get label() { return T("Versicherung & Sonstiges"); }, color: "#34d399", sparten: ["insurance", "other"] },
+  { key: "house", get label() { return T("Hauskosten"); }, color: "#2dd4bf", sparten: ["hauskosten"] },
+  { key: "loan", get label() { return T("Kredite & Leasing"); }, color: "#f7b733", sparten: ["loan", "leasing"] },
 ];
 // Vorschläge für die Symbolwahl, falls der Symbol-Wähler von Home Assistant nicht geladen ist
 const ICON_SUGGEST = ["mdi:flash", "mdi:fire", "mdi:water", "mdi:home", "mdi:home-city", "mdi:chimney", "mdi:recycle", "mdi:delete", "mdi:broom", "mdi:tree", "mdi:sprinkler", "mdi:garage",
@@ -54,15 +417,15 @@ const ICON_SUGGEST = ["mdi:flash", "mdi:fire", "mdi:water", "mdi:home", "mdi:hom
 const HA_COLORS = { red: "#f44336", pink: "#e91e63", purple: "#926bc7", "deep-purple": "#6e41ab", indigo: "#3f51b5", blue: "#2196f3", "light-blue": "#03a9f4", cyan: "#00bcd4", teal: "#009688", green: "#4caf50", "light-green": "#8bc34a", lime: "#cddc39", yellow: "#ffeb3b", amber: "#ffc107", orange: "#ff9800", "deep-orange": "#ff6f22", brown: "#795548", "light-grey": "#bdbdbd", grey: "#9e9e9e", "dark-grey": "#606060", "blue-grey": "#607d8b" };
 const CHART_COLORS = ["#38bdf8", "#f7b733", "#a78bfa", "#34d399", "#fb923c", "#f87171", "#60a5fa", "#f472b6", "#2dd4bf", "#e879f9", "#facc15", "#94a3b8"];
 const BK_ERR = {
-  invalid_backup: "Das ist keine gültige Tariffy-Sicherung.",
-  exists: "Einen Vertrag mit diesem Namen und dieser Sparte gibt es schon.",
-  not_found: "Diese Sicherung gibt es nicht mehr.",
-  restore_failed: "Das Wiederherstellen ist fehlgeschlagen.",
+  get invalid_backup() { return T("Das ist keine gültige Tariffy-Sicherung."); },
+  get exists() { return T("Einen Vertrag mit diesem Namen und dieser Sparte gibt es schon."); },
+  get not_found() { return T("Diese Sicherung gibt es nicht mehr."); },
+  get restore_failed() { return T("Das Wiederherstellen ist fehlgeschlagen."); },
 };
 const TABS = [["overview", "Übersicht"], ["contracts", "Verträge"], ["costs", "Kosten"], ["forecast", "Vorschau"], ["history", "Historie"], ["settings", "Einstellungen"]];
-const HOUSE = { waste: "Abfallgebühren", street_cleaning: "Straßenreinigung", rainwater: "Niederschlagswasser (Regenwassergebühr)", property_tax: "Grundsteuer", chimney_sweep: "Schornsteinfeger", winter_service: "Winterdienst", caretaker: "Hausmeister / Gebäudeservice" };
-const INSURANCE = { car: "Auto (Kfz)", house: "Gebäude / Haus", household: "Hausrat", liability: "Haftpflicht", health: "Kranken", life: "Leben", legal: "Rechtsschutz", accident: "Unfall", other: "Sonstige" };
-const INTERVAL = { monthly: "monatlich", quarterly: "vierteljährlich", halfyearly: "halbjährlich", yearly: "jährlich" };
+const HOUSE = { get waste() { return T("Abfallgebühren"); }, get street_cleaning() { return T("Straßenreinigung"); }, get rainwater() { return T("Niederschlagswasser (Regenwassergebühr)"); }, get property_tax() { return T("Grundsteuer"); }, get chimney_sweep() { return T("Schornsteinfeger"); }, get winter_service() { return T("Winterdienst"); }, get caretaker() { return T("Hausmeister / Gebäudeservice"); } };
+const INSURANCE = { get car() { return T("Auto (Kfz)"); }, get house() { return T("Gebäude / Haus"); }, get household() { return T("Hausrat"); }, get liability() { return T("Haftpflicht"); }, get health() { return T("Kranken"); }, get life() { return T("Leben"); }, get legal() { return T("Rechtsschutz"); }, get accident() { return T("Unfall"); }, get other() { return T("Sonstige"); } };
+const INTERVAL = { get monthly() { return T("monatlich"); }, get quarterly() { return T("vierteljährlich"); }, get halfyearly() { return T("halbjährlich"); }, get yearly() { return T("jährlich"); } };
 const METERED = new Set(["electricity", "electricity_ht_nt", "gas", "water"]);
 const isNum = (v) => typeof v === "number" && isFinite(v);
 // Eingaben (Vertragsnamen, Anbieter, Labels, …) kommen nie in den HTML-Parser: esc() gibt nur eine Marke zurück, und _mount() setzt
@@ -312,12 +675,12 @@ input.file::file-selector-button{font:inherit;font-size:13px;color:var(--text);b
 
 // Sortierung der Kacheln auf der Übersicht. dir: Standardrichtung (-1 = absteigend, 1 = aufsteigend)
 const SORTS = {
-  urgency: { label: "Dringlichkeit" },
-  abschlag: { label: "Abschlag", dir: -1 },
-  kosten: { label: "Gesamtkosten", dir: -1 },
-  laufzeit: { label: "Laufzeit", dir: -1 },
-  rest: { label: "Restlaufzeit", dir: 1 },
-  art: { label: "Art des Vertrags", dir: 1 },
+  urgency: { get label() { return T("Dringlichkeit"); } },
+  abschlag: { get label() { return T("Abschlag"); }, dir: -1 },
+  kosten: { get label() { return T("Gesamtkosten"); }, dir: -1 },
+  laufzeit: { get label() { return T("Laufzeit"); }, dir: -1 },
+  rest: { get label() { return T("Restlaufzeit"); }, dir: 1 },
+  art: { get label() { return T("Art des Vertrags"); }, dir: 1 },
 };
 
 class TariffyGlow extends HTMLElement {
@@ -356,6 +719,7 @@ class TariffyGlow extends HTMLElement {
 
   setConfig(config) {
     this._config = { show_loans: true, title: "Tariffy", ...(config || {}) };
+    if (this._config.language) LANG = langOf(this._config.language);
     this._labelSplit = this._config.label_split === "equal" ? "equal" : "full";
     ABO_RE = aboRegex(Array.isArray(this._config.abo_words) ? this._config.abo_words : ABO_WORDS);
     this._render();
@@ -368,6 +732,8 @@ class TariffyGlow extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    const lang = langOf(this._config?.language || hass?.locale?.language || hass?.language);
+    if (lang !== LANG) { LANG = lang; if (this.isConnected && this._contracts) this._render(); }
     if (!this._sub && hass?.connection) this._subscribe();
     // Namen und Farben der Labels kennt nur die Label-Verwaltung (nur für Admins abrufbar); ohne sie dient die ID als Name
     if (!this._colorReq && hass?.callWS) {
@@ -450,7 +816,7 @@ class TariffyGlow extends HTMLElement {
       (msg) => { this._contracts = (msg && msg.contracts) || []; this._err = null; this._render(); },
       { type: "tariffy/subscribe" }
     );
-    this._sub.catch((e) => { this._sub = null; this._err = e?.message || "Tariffy nicht erreichbar"; this._render(); });
+    this._sub.catch((e) => { this._sub = null; this._err = e?.message || T("Tariffy nicht erreichbar"); this._render(); });
   }
 
   _fit() {
@@ -559,7 +925,7 @@ class TariffyGlow extends HTMLElement {
     if (cl.length) out.push("colors:", ...cl);
     const icons = Object.entries(this._colors.icon);
     if (icons.length) { out.push("icons:", "  sparte:"); for (const [k, v] of icons) out.push(`    ${k}: "${v}"`); }
-    return out.length ? out.join("\n") : "# Noch keine eigenen Farben oder Symbole gewählt";
+    return out.length ? out.join("\n") : T("# Noch keine eigenen Farben oder Symbole gewählt");
   }
 
   _colorRow(key, label, color, iconPath) {
@@ -571,28 +937,28 @@ class TariffyGlow extends HTMLElement {
     const open = isSparte && this._iconPick === key;
     const picker = !open ? "" : `<div class="ipick">
       ${customElements.get("ha-icon-picker") ? `<ha-icon-picker class="ihaPicker" data-pickkey="${esc(key)}" label="Symbol suchen"></ha-icon-picker>`
-        : `<div class="iin"><input type="text" id="tg-icon-input" placeholder="mdi:car" value="${esc(curIcon)}" aria-label="Symbol, zum Beispiel mdi:car"><button type="button" class="btn blue" data-act="icon-apply" data-key="${esc(key)}">Übernehmen</button></div>`}
+        : `<div class="iin"><input type="text" id="tg-icon-input" placeholder="mdi:car" value="${esc(curIcon)}" aria-label="${T("Symbol, zum Beispiel mdi:car")}"><button type="button" class="btn blue" data-act="icon-apply" data-key="${esc(key)}">${T("Übernehmen")}</button></div>`}
       <div class="igrid">${ICON_SUGGEST.map((i) => `<button type="button" class="ib ${curIcon === i ? "on" : ""}" data-act="icon-set" data-key="${esc(key)}" data-v="${i}" title="${i}" aria-label="${i}"><ha-icon icon="${i}" style="--mdc-icon-size:20px"></ha-icon></button>`).join("")}</div>
-      <div class="acts"><button type="button" class="btn" data-act="icon-reset" data-key="${esc(key)}"${curIcon ? "" : " disabled"}>Standard-Symbol</button><button type="button" class="btn" data-act="icon-open" data-key="${esc(key)}">Schließen</button></div></div>`;
+      <div class="acts"><button type="button" class="btn" data-act="icon-reset" data-key="${esc(key)}"${curIcon ? "" : " disabled"}>${T("Standard-Symbol")}</button><button type="button" class="btn" data-act="icon-open" data-key="${esc(key)}">${T("Schließen")}</button></div></div>`;
     return `<div class="crow">${symbol}<span class="cn">${esc(label)}</span>
-      <div class="sw">${swatches}<input type="color" value="${/^#[0-9a-f]{6}$/i.test(color) ? color : "#8b91a1"}" data-color="${esc(key)}" aria-label="Eigene Farbe für ${esc(label)}">
-      ${isSparte ? `<button type="button" class="btn" data-act="icon-open" data-key="${esc(key)}" aria-expanded="${open}">Symbol</button>` : ""}
-      <button type="button" class="btn" data-act="col-reset" data-key="${esc(key)}"${own ? "" : " disabled"}>Standard</button></div>${picker}</div>`;
+      <div class="sw">${swatches}<input type="color" value="${/^#[0-9a-f]{6}$/i.test(color) ? color : "#8b91a1"}" data-color="${esc(key)}" aria-label="${esc(T("Eigene Farbe für {l}", { l: label }))}">
+      ${isSparte ? `<button type="button" class="btn" data-act="icon-open" data-key="${esc(key)}" aria-expanded="${open}">${T("Symbol")}</button>` : ""}
+      <button type="button" class="btn" data-act="col-reset" data-key="${esc(key)}"${own ? "" : " disabled"}>${T("Standard")}</button></div>${picker}</div>`;
   }
 
   _colorTile() {
     const used = [...new Set((this._contracts || []).map((c) => c.sparte))].sort((a, b) => Object.keys(SPARTE_NAME).indexOf(a) - Object.keys(SPARTE_NAME).indexOf(b));
     const groupsUsed = GROUPS.filter((g) => (this._contracts || []).some((c) => groupOf(c) === g));
     const any = Object.keys(this._colors.sparte).length || Object.keys(this._colors.group).length || Object.keys(this._colors.icon).length;
-    return `<div class="tile"><div class="lbl" style="margin-bottom:12px">Farben und Symbole</div><div class="bk">
-      <p>Wähle für jede Sparte, die du nutzt, eine Farbe und ein Symbol. Die Farbe gilt für Symbole, Kostenaufteilung und Legenden, das Symbol für die Kacheln und Zeilen. Ein eigenes Symbol, das du in Tariffy an einem Vertrag gewählt hast, hat Vorrang. Die Gruppen färben den Balken der Fixkosten auf der Übersicht. Die Wahl wird in deinem Benutzerkonto in Home Assistant gespeichert und gilt auf allen deinen Geräten.</p>
-      <div class="lbl" style="margin-top:4px">Sparten</div>
-      ${used.length ? used.map((s) => this._colorRow(`sparte:${s}`, SPARTE_NAME[s] || s, this._sparteColor(s), ICONS[s] || ICONS.other)).join("") : "<p>Noch keine Verträge.</p>"}
-      <div class="lbl" style="margin-top:8px">Gruppen</div>
+    return `<div class="tile"><div class="lbl" style="margin-bottom:12px">${T("Farben und Symbole")}</div><div class="bk">
+      <p>${T("Wähle für jede Sparte, die du nutzt, eine Farbe und ein Symbol. Die Farbe gilt für Symbole, Kostenaufteilung und Legenden, das Symbol für die Kacheln und Zeilen. Ein eigenes Symbol, das du in Tariffy an einem Vertrag gewählt hast, hat Vorrang. Die Gruppen färben den Balken der Fixkosten auf der Übersicht. Die Wahl wird in deinem Benutzerkonto in Home Assistant gespeichert und gilt auf allen deinen Geräten.")}</p>
+      <div class="lbl" style="margin-top:4px">${T("Sparten")}</div>
+      ${used.length ? used.map((s) => this._colorRow(`sparte:${s}`, SPARTE_NAME[s] || s, this._sparteColor(s), ICONS[s] || ICONS.other)).join("") : T("<p>Noch keine Verträge.</p>")}
+      <div class="lbl" style="margin-top:8px">${T("Gruppen")}</div>
       ${groupsUsed.map((g) => this._colorRow(`group:${g.key}`, g.label, this._groupColor(g), "M4 12a8 8 0 1 0 16 0a8 8 0 1 0-16 0")).join("")}
-      <div class="acts" style="margin-top:6px"><button type="button" class="btn" data-act="col-reset-all"${any ? "" : " disabled"}>Alle auf Standard</button>
-        <button type="button" class="btn blue" data-act="col-copy">Als YAML kopieren</button></div>
-      <p style="font-size:12.5px">Für alle Benutzer trägst du Farben und Symbole in der Kartenkonfiguration ein. Das YAML dafür steht hier:</p>
+      <div class="acts" style="margin-top:6px"><button type="button" class="btn" data-act="col-reset-all"${any ? "" : " disabled"}>${T("Alle auf Standard")}</button>
+        <button type="button" class="btn blue" data-act="col-copy">${T("Als YAML kopieren")}</button></div>
+      <p style="font-size:12.5px">${T("Für alle Benutzer trägst du Farben und Symbole in der Kartenkonfiguration ein. Das YAML dafür steht hier:")}</p>
       <textarea class="yaml" id="tg-yaml" readonly rows="${Math.max(2, this._colorYaml().split("\n").length)}">${esc(this._colorYaml())}</textarea></div></div>`;
   }
 
@@ -808,8 +1174,8 @@ class TariffyGlow extends HTMLElement {
     const prog = c.prognose_real;
     if (METERED.has(c.sparte) && isNum(prog) && prog < 0) {
       out.push({
-        rank: 0, tone: "red", chip: "Nachzahlung droht", title: c.title,
-        sub: isNum(c.abschlag_anpassung_empfohlen) ? `Abschlag auf ${this._eur(c.abschlag_anpassung_empfohlen, 0)} erhöhen` : "Nachzahlung zu erwarten",
+        rank: 0, tone: "red", chip: T("Nachzahlung droht"), title: c.title,
+        sub: isNum(c.abschlag_anpassung_empfohlen) ? `${T("Abschlag auf")} ${this._eur(c.abschlag_anpassung_empfohlen, 0)} ${T("erhöhen")}` : T("Nachzahlung zu erwarten"),
         value: this._eur(prog, 0),
       });
     }
@@ -817,20 +1183,20 @@ class TariffyGlow extends HTMLElement {
       const until = c.kuendigung_bis || c.ende;
       const days = this._days(until);
       out.push({
-        rank: 1, tone: "orange", chip: "Jetzt kündigen", title: c.title,
-        sub: until ? `Frist bis ${this._date(until)}` : "Kündigungsfrist läuft",
-        value: days !== null && days >= 0 ? `${days} Tage` : "",
+        rank: 1, tone: "orange", chip: T("Jetzt kündigen"), title: c.title,
+        sub: until ? `${T("Frist bis")} ${this._date(until)}` : T("Kündigungsfrist läuft"),
+        value: days !== null && days >= 0 ? `${days} ${T("Tage")}` : "",
       });
     }
     if (c.sparte === "leasing" && isNum(c.leasing_mehr_km) && c.leasing_mehr_km > 0) {
       out.push({
-        rank: 1, tone: "orange", chip: "Mehrkilometer", title: c.title,
-        sub: isNum(c.leasing_km_abweichung_ende) ? `Bei Rückgabe etwa ${this._num(c.leasing_km_abweichung_ende, 0)} km über der Erlaubnis` : "Mehr Kilometer als erlaubt",
+        rank: 1, tone: "orange", chip: T("Mehrkilometer"), title: c.title,
+        sub: isNum(c.leasing_km_abweichung_ende) ? `${T("Bei Rückgabe etwa")} ${this._num(c.leasing_km_abweichung_ende, 0)} ${T("km über der Erlaubnis")}` : T("Mehr Kilometer als erlaubt"),
         value: isNum(c.leasing_nachzahlung) && c.leasing_nachzahlung > 0 ? `≈ ${this._eur(c.leasing_nachzahlung, 0)}` : "",
       });
     }
     if (c.wechsel) {
-      out.push({ rank: 2, tone: "blue", chip: `Wechsel am ${this._date(c.wechsel)}`, title: c.title, sub: "Neuer Tarif hinterlegt", value: "" });
+      out.push({ rank: 2, tone: "blue", chip: `${T("Wechsel am")} ${this._date(c.wechsel)}`, title: c.title, sub: T("Neuer Tarif hinterlegt"), value: "" });
     }
     return out;
   }
@@ -838,20 +1204,20 @@ class TariffyGlow extends HTMLElement {
   _status(c) {
     const issue = this._issues(c)[0];
     if (issue) return issue;
-    if (c.archivierbar) return { rank: 4, tone: "gray", chip: "Abgelaufen", value: "" };
+    if (c.archivierbar) return { rank: 4, tone: "gray", chip: T("Abgelaufen"), value: "" };
     if (METERED.has(c.sparte) && isNum(c.prognose_real) && c.prognose_real > 0) {
-      return { rank: 3, tone: "green", chip: "Guthaben", value: this._eur(c.prognose_real, 0, true) };
+      return { rank: 3, tone: "green", chip: T("Guthaben"), value: this._eur(c.prognose_real, 0, true) };
     }
     if (c.sparte === "leasing" && isNum(c.leasing_minder_km) && c.leasing_minder_km > 0 && isNum(c.leasing_gutschrift) && c.leasing_gutschrift > 0) {
-      return { rank: 3, tone: "green", chip: "Gutschrift erwartet", value: this._eur(c.leasing_gutschrift, 0, true) };
+      return { rank: 3, tone: "green", chip: T("Gutschrift erwartet"), value: this._eur(c.leasing_gutschrift, 0, true) };
     }
     if (c.sparte === "leasing" && isNum(c.leasing_km_gefahren)) {
-      return { rank: 5, tone: "gray", chip: `${this._num(c.leasing_km_gefahren, 0)} km gefahren`, value: "" };
+      return { rank: 5, tone: "gray", chip: `${this._num(c.leasing_km_gefahren, 0)} ${T("km gefahren")}`, value: "" };
     }
     if (c.sparte === "loan" && isNum(c.kredit_tilgung_prozent)) {
-      return { rank: 5, tone: "gray", chip: `${this._num(c.kredit_tilgung_prozent, 0)} % getilgt`, value: "" };
+      return { rank: 5, tone: "gray", chip: `${this._num(c.kredit_tilgung_prozent, 0)} ${T("% getilgt")}`, value: "" };
     }
-    return { rank: 5, tone: "gray", chip: "Läuft", value: "" };
+    return { rank: 5, tone: "gray", chip: T("Läuft"), value: "" };
   }
 
   _progress(c) {
@@ -901,9 +1267,9 @@ class TariffyGlow extends HTMLElement {
   _sortText(c) {
     const v = this._sortValue(c);
     switch (this._sort) {
-      case "kosten": return v === null ? "" : `Gesamt ${this._eur(v, 0)}`;
-      case "laufzeit": return v === null ? "" : v >= 365 ? `Laufzeit ${this._num(v / 365.25, 1)} J.` : `Laufzeit ${Math.round(v / 30.4)} Mon.`;
-      case "rest": return v === null ? "" : v >= 0 ? `Noch ${v} Tage` : "abgelaufen";
+      case "kosten": return v === null ? "" : `${T("Gesamt")} ${this._eur(v, 0)}`;
+      case "laufzeit": return v === null ? "" : v >= 365 ? `${T("Laufzeit")} ${this._num(v / 365.25, 1)} ${T("J.")}` : `${T("Laufzeit")} ${Math.round(v / 30.4)} ${T("Mon.")}`;
+      case "rest": return v === null ? "" : v >= 0 ? T("Noch {n} Tage", { n: v }) : T("abgelaufen");
       case "art": return SPARTE_NAME[c.sparte] || "";
       default: return "";
     }
@@ -948,17 +1314,17 @@ class TariffyGlow extends HTMLElement {
     tokens = [];
     let body;
     const cur = this._tab === "settings" && !this._isAdmin ? "overview" : TABS.find(([k]) => k === this._tab) ? this._tab : "overview";
-    if (this._err) body = `<div class="state">Tariffy ist nicht erreichbar: ${esc(this._err)}</div>`;
-    else if (this._contracts === null) body = `<div class="state">Verträge werden geladen …</div>`;
+    if (this._err) body = `<div class="state">${T("Tariffy ist nicht erreichbar:")} ${esc(this._err)}</div>`;
+    else if (this._contracts === null) body = `<div class="state">${T("Verträge werden geladen …")}</div>`;
     else if (cur === "settings") body = this._backupView();
     else if (cur === "history") body = this._historyView();
     else if (cur === "forecast" && this._live.length) body = this._forecastView();
-    else if (!this._live.length) body = `<div class="state">Noch keine Verträge in Tariffy angelegt.</div>`;
+    else if (!this._live.length) body = `<div class="state">${T("Noch keine Verträge in Tariffy angelegt.")}</div>`;
     else body = cur === "contracts" ? this._contractsView() : cur === "costs" ? this._costsView() : this._overview();
     const tab = (k, l) => `<button type="button" data-tab="${k}" class="${cur === k ? "on" : ""}">${l}</button>`;
     this._mount(root, `<style>${CSS}</style><div class="root">
       <div class="top"><span class="brand">${esc(this._config?.title || "Tariffy")}</span>
-        <div class="tabs">${TABS.filter(([k]) => k !== "settings" || this._isAdmin).map(([k, l]) => tab(k, l)).join("")}</div></div>
+        <div class="tabs">${TABS.filter(([k]) => k !== "settings" || this._isAdmin).map(([k, l]) => tab(k, T(l))).join("")}</div></div>
       ${body}</div>`);
     tokens = [];
     this._fit();
@@ -1066,10 +1432,10 @@ class TariffyGlow extends HTMLElement {
     else if (act === "bk-ask-discard") { bk.asking = `discard:${id}`; this._render(); }
     else if (act === "bk-restore") this._bkRun(() => this._hass.callWS({ type: "tariffy/backup_restore", backup: bk.backup }), (r) => {
       bk.plan = null; bk.backup = null; bk.file = null;
-      return `Wiederhergestellt: ${r.created.length} angelegt, ${r.skipped.length} übersprungen.`;
+      return `${T("Wiederhergestellt:")} ${r.created.length} ${T("angelegt,")} ${r.skipped.length} ${T("übersprungen.")}`;
     });
-    else if (act === "bk-restore-one") { const it = (bk.deleted || []).find((d) => d.id === id); this._bkRun(() => this._hass.callWS({ type: "tariffy/deleted_restore", item_id: id }), (r) => `„${r.title || (it && it.title) || ""}“ ist wieder da.`); }
-    else if (act === "bk-discard") { const it = (bk.deleted || []).find((d) => d.id === id); this._bkRun(() => this._hass.callWS({ type: "tariffy/deleted_discard", item_id: id }), () => `„${(it && it.title) || ""}“ wurde vergessen.`); }
+    else if (act === "bk-restore-one") { const it = (bk.deleted || []).find((d) => d.id === id); this._bkRun(() => this._hass.callWS({ type: "tariffy/deleted_restore", item_id: id }), (r) => T("„{t}“ ist wieder da.", { t: r.title || (it && it.title) || "" })); }
+    else if (act === "bk-discard") { const it = (bk.deleted || []).find((d) => d.id === id); this._bkRun(() => this._hass.callWS({ type: "tariffy/deleted_discard", item_id: id }), () => T("„{t}“ wurde vergessen.", { t: (it && it.title) || "" })); }
   }
 
   _saveSort() {
@@ -1097,39 +1463,39 @@ class TariffyGlow extends HTMLElement {
     const hasLoan = live.some((c) => groupOf(c).key === "loan");
     const stack = groups.map((g) => `<i style="width:${total ? (g.sum / total) * 100 : 0}%;background:${g.color}"></i>`).join("");
     const legend = groups.map((g) => `<span><i class="dot" style="background:${g.color}"></i>${g.label} <b class="num">${this._eur(g.sum)}</b></span>`).join("");
-    const modeSeg = `<div class="seg" role="group" aria-label="Art der Kosten"><button type="button" data-act="cmode" data-id="share" class="${due ? "" : "on"}">Anteilig</button><button type="button" data-act="cmode" data-id="due" class="${due ? "on" : ""}">Fällig im ${esc(monthName)}</button></div>`;
+    const modeSeg = `<div class="seg" role="group" aria-label="${T("Art der Kosten")}"><button type="button" data-act="cmode" data-id="share" class="${due ? "" : "on"}">${T("Anteilig")}</button><button type="button" data-act="cmode" data-id="due" class="${due ? "on" : ""}">${T("Fällig im")} ${esc(monthName)}</button></div>`;
     const yearly = live.filter((c) => !(this._noLoan && groupOf(c).key === "loan")).reduce((a, c) => a + this._shareCost(c, m0, m1), 0) * 12;
-    const seg = `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${modeSeg}${hasLoan ? `<div class="seg"><button type="button" data-k="all" class="${this._noLoan ? "" : "on"}">Alles</button><button type="button" data-k="nok" class="${this._noLoan ? "on" : ""}">Ohne Kredit &amp; Leasing</button></div>` : ""}</div>`;
+    const seg = `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${modeSeg}${hasLoan ? `<div class="seg"><button type="button" data-k="all" class="${this._noLoan ? "" : "on"}">${T("Alles")}</button><button type="button" data-k="nok" class="${this._noLoan ? "on" : ""}">${T("Ohne Kredit &amp; Leasing")}</button></div>` : ""}</div>`;
 
     const alerts = live.flatMap((c) => this._issues(c).map((i) => ({ ...i, id: c.entry_id, sparte: c.sparte, icon: c.icon }))).sort((a, b) => a.rank - b.rank);
     const alertHtml = alerts.length
       ? `<div class="alerts">${alerts.slice(0, 5).map((a) => `<button type="button" class="alert ${a.tone}" data-go="${esc(a.id)}">${this._icon(a.sparte, null, a.icon)}
           <div class="t">${esc(a.title)}<span>${esc(a.sub)}</span></div><div class="v t-${a.tone} num">${esc(a.value)}</div></button>`).join("")}</div>`
-      : `<div class="ok"><span class="dot" style="background:var(--green);box-shadow:0 0 8px var(--green);margin:0"></span>Alles im grünen Bereich</div>`;
+      : `<div class="ok"><span class="dot" style="background:var(--green);box-shadow:0 0 8px var(--green);margin:0"></span>${T("Alles im grünen Bereich")}</div>`;
 
     const events = [];
     for (const c of live) {
       const kb = this._days(c.kuendigung_bis);
-      if (kb !== null && kb >= 0) events.push({ date: c.kuendigung_bis, tone: "orange", t: c.title, s: "Kündigungsfrist" });
+      if (kb !== null && kb >= 0) events.push({ date: c.kuendigung_bis, tone: "orange", t: c.title, s: T("Kündigungsfrist") });
       const ed = this._days(c.ende);
-      if (ed !== null && ed >= 0 && ed <= 400) events.push({ date: c.ende, tone: "green", t: c.title, s: "Vertragsende" });
+      if (ed !== null && ed >= 0 && ed <= 400) events.push({ date: c.ende, tone: "green", t: c.title, s: T("Vertragsende") });
       const wd = this._days(c.wechsel);
-      if (wd !== null && wd >= 0) events.push({ date: c.wechsel, tone: "blue", t: c.title, s: "Wechsel auf neuen Tarif" });
+      if (wd !== null && wd >= 0) events.push({ date: c.wechsel, tone: "blue", t: c.title, s: T("Wechsel auf neuen Tarif") });
     }
     events.sort((a, b) => a.date.localeCompare(b.date));
     const tl = events.length
       ? `<div class="tl">${events.slice(0, 4).map((e) => `<div class="t-${e.tone}"><i class="d"></i><b>${this._shortDate(e.date)} ${esc(e.t)}</b><em>${e.s}</em></div>`).join("")}</div>`
-      : `<div class="sub" style="margin-top:12px">Keine Termine in den nächsten Monaten.</div>`;
+      : `<div class="sub" style="margin-top:12px">${T("Keine Termine in den nächsten Monaten.")}</div>`;
 
-    const filters = [{ k: "all", l: "Alle", n: live.length }, ...GROUPS.map((g) => ({ k: g.key, l: g.label, n: live.filter((c) => groupOf(c) === g).length })).filter((g) => g.n)];
+    const filters = [{ k: "all", l: T("Alle"), n: live.length }, ...GROUPS.map((g) => ({ k: g.key, l: g.label, n: live.filter((c) => groupOf(c) === g).length })).filter((g) => g.n)];
     const labelMap = new Map();
     for (const c of live) for (const l of this._labelsOf(c)) { const o = labelMap.get(l.id) || { k: `label:${l.id}`, l: l.name, n: 0, color: this._labelColor(l) }; o.n += 1; labelMap.set(l.id, o); }
     const labelFilters = [...labelMap.values()].sort((a, b) => a.l.localeCompare(b.l));
     if (this._filter.startsWith("label:") && !labelMap.has(this._filter.slice(6))) this._filter = "all";
     const list = this._sorted(live.filter((c) => this._filter === "all" || (this._filter.startsWith("label:") ? this._labelsOf(c).some((l) => `label:${l.id}` === this._filter) : groupOf(c).key === this._filter)));
-    const sortUi = `<div class="sortbox"><label class="lbl" for="tg-sort">Sortieren</label>
+    const sortUi = `<div class="sortbox"><label class="lbl" for="tg-sort">${T("Sortieren")}</label>
       <select id="tg-sort">${Object.entries(SORTS).map(([k, s]) => `<option value="${k}"${this._sort === k ? " selected" : ""}>${s.label}</option>`).join("")}</select>
-      <button type="button" class="dirbtn" data-dir aria-label="Reihenfolge umkehren" title="Reihenfolge umkehren">⇅</button></div>`;
+      <button type="button" class="dirbtn" data-dir aria-label="${T("Reihenfolge umkehren")}" title="${T("Reihenfolge umkehren")}">⇅</button></div>`;
 
     const tiles = list.map((c) => {
       const s = this._status(c);
@@ -1138,19 +1504,19 @@ class TariffyGlow extends HTMLElement {
       const glow = s.tone === "gray" ? "" : `g-${s.tone}`;
       return `<button type="button" class="tile ctile ${glow}" data-go="${esc(c.entry_id)}">
         <div class="h">${this._icon(c.sparte, null, c.icon)}<div style="min-width:0"><div class="n">${esc(c.title)}</div><div class="p">${esc([c.anbieter || SPARTE_NAME[c.sparte] || "", ...this._labelsOf(c).map((l) => l.name)].filter(Boolean).join(" · "))}</div></div></div>
-        <div class="price num">${this._num(this._monthly(c))} € <small>/ Mon</small></div>
+        <div class="price num">${this._num(this._monthly(c))} € <small>${T("/ Mon")}</small></div>
         ${pct === null ? "" : `<div class="bar" style="color:${col}"><i style="width:${pct}%;background:${col}"></i></div>`}
         ${this._sortText(c) ? `<div class="sv num">${esc(this._sortText(c))}</div>` : ""}
         <div class="f"><span class="chip ${s.tone}">${esc(s.chip)}</span><span class="num t-${s.tone === "gray" ? "gray" : s.tone}">${esc(s.value || (pct === null ? "" : this._num(pct, 0) + " %"))}</span></div></button>`;
     }).join("");
 
     return `<div class="hero">
-      <div class="tile g-blue"><div class="lbl">${due ? `Fällig im ${esc(monthName)}` : "Fixkosten pro Monat"}</div>
+      <div class="tile g-blue"><div class="lbl">${due ? `${T("Fällig im")} ${esc(monthName)}` : T("Fixkosten pro Monat")}</div>
         <div class="big num">${this._num(total)} <small>€</small></div>
-        <div class="sub">${due ? `Zahlungen, die im ${esc(monthName)} fällig werden · ` : ""}≈ ${this._eur(yearly, 0)} pro Jahr${due ? ` (Ø ${this._eur(yearly / 12, 0)} pro Monat)` : ""}</div>
+        <div class="sub">${due ? `${T("Zahlungen, die im")} ${esc(monthName)} ${T("fällig werden ·")} ` : ""}≈ ${this._eur(yearly, 0)} ${T("pro Jahr")}${due ? ` ${T("(Ø")} ${this._eur(yearly / 12, 0)} ${T("pro Monat)")}` : ""}</div>
         <div class="stack">${stack}</div><div class="legend">${legend}</div>${seg}</div>
-      <div class="tile"><div class="bar-row"><span class="lbl">Braucht dich</span>${alerts.length ? `<span class="chip ${alerts[0].tone}">${alerts.length}</span>` : ""}</div>${alertHtml}</div>
-      <div class="tile"><div class="lbl">Nächste Termine</div>${tl}</div>
+      <div class="tile"><div class="bar-row"><span class="lbl">${T("Braucht dich")}</span>${alerts.length ? `<span class="chip ${alerts[0].tone}">${alerts.length}</span>` : ""}</div>${alertHtml}</div>
+      <div class="tile"><div class="lbl">${T("Nächste Termine")}</div>${tl}</div>
     </div>
     <div class="bar-row"><div class="fchips">${filters.map((f) => `<button type="button" data-f="${f.k}" class="fchip ${this._filter === f.k ? "on" : ""}">${f.l}<b>${f.n}</b></button>`).join("")}
       ${labelFilters.length ? `<span class="vsep"></span>${labelFilters.map((f) => `<button type="button" data-f="${esc(f.k)}" class="fchip ${this._filter === f.k ? "on" : ""}"><i class="dot" style="background:${f.color};margin-right:6px"></i>${esc(f.l)}<b>${f.n}</b></button>`).join("")}` : ""}</div>${sortUi}</div>
@@ -1187,7 +1553,7 @@ class TariffyGlow extends HTMLElement {
       const a = new Date(n.getFullYear() + off, 0, 1);
       return { p, a, b: new Date(a.getFullYear() + 1, 0, 1), label: String(a.getFullYear()), short: String(a.getFullYear()) };
     }
-    return { p, a: null, b: null, label: p === "plan" ? "Pro Jahr (Plan)" : "Seit Vertragsbeginn", short: p === "plan" ? "pro Jahr" : "bisher" };
+    return { p, a: null, b: null, label: p === "plan" ? T("Pro Jahr (Plan)") : T("Seit Vertragsbeginn"), short: p === "plan" ? T("pro Jahr") : T("bisher") };
   }
 
   _earliest() {
@@ -1214,18 +1580,18 @@ class TariffyGlow extends HTMLElement {
   }
 
   _periodBar(R) {
-    const per = [["month", "Monat"], ["year", "Jahr"], ["all", "Gesamt"], ["plan", "Plan"]];
+    const per = [["month", T("Monat")], ["year", T("Jahr")], ["all", T("Gesamt")], ["plan", T("Plan")]];
     const chev = (d) => `<svg viewBox="0 0 24 24"><path d="${d}"/></svg>`;
     let nav = `<div class="knav"><b>${esc(R.label)}</b></div>`;
     if (R.a) {
       const first = this._earliest();
       const prevOff = !first || this._isoDay(R.a) <= first;
-      nav = `<div class="knav"><button type="button" class="sic" data-act="cnav" data-id="-1" aria-label="Zurück"${prevOff ? " disabled" : ""}>${chev("m15 6-6 6 6 6")}</button><b>${esc(R.label)}</b>
-        <button type="button" class="sic" data-act="cnav" data-id="1" aria-label="Weiter"${this._cp.off >= 0 ? " disabled" : ""}>${chev("m9 6 6 6-6 6")}</button></div>`;
+      nav = `<div class="knav"><button type="button" class="sic" data-act="cnav" data-id="-1" aria-label="${T("Zurück")}"${prevOff ? " disabled" : ""}>${chev("m15 6-6 6 6 6")}</button><b>${esc(R.label)}</b>
+        <button type="button" class="sic" data-act="cnav" data-id="1" aria-label="${T("Weiter")}"${this._cp.off >= 0 ? " disabled" : ""}>${chev("m9 6 6 6-6 6")}</button></div>`;
     }
-    const modes = [["share", "Anteilig"], ["due", "Fällig"], ["real", "Verbrauch"]];
-    const mode = R.a ? `<div class="seg" role="group" aria-label="Art der Kosten">${modes.map(([k, l]) => `<button type="button" data-act="cmode" data-id="${k}" class="${this._costMode === k ? "on" : ""}">${l}</button>`).join("")}</div>` : "";
-    return `<div class="kper"><div class="seg" role="group" aria-label="Zeitraum">${per.map(([k, l]) => `<button type="button" data-act="cper" data-id="${k}" class="${this._cp.p === k ? "on" : ""}">${l}</button>`).join("")}</div>${mode}${nav}</div>`;
+    const modes = [["share", T("Anteilig")], ["due", T("Fällig")], ["real", T("Verbrauch")]];
+    const mode = R.a ? `<div class="seg" role="group" aria-label="${T("Art der Kosten")}">${modes.map(([k, l]) => `<button type="button" data-act="cmode" data-id="${k}" class="${this._costMode === k ? "on" : ""}">${l}</button>`).join("")}</div>` : "";
+    return `<div class="kper"><div class="seg" role="group" aria-label="${T("Zeitraum")}">${per.map(([k, l]) => `<button type="button" data-act="cper" data-id="${k}" class="${this._cp.p === k ? "on" : ""}">${l}</button>`).join("")}</div>${mode}${nav}</div>`;
   }
 
   _cpValue(c, R) {
@@ -1266,7 +1632,7 @@ class TariffyGlow extends HTMLElement {
         const v = this._cpValue(c, R);
         if (!(v > 0.005)) continue;
         const ls = this._labelsOf(c);
-        const parts = ls.length ? ls.map((l) => [l.id, l.name, this._labelColor(l)]) : [["", "Ohne Label", "#5d6373"]];
+        const parts = ls.length ? ls.map((l) => [l.id, l.name, this._labelColor(l)]) : [["", T("Ohne Label"), "#5d6373"]];
         for (const [id, name, lcolor] of parts) {
           const o = m.get(id) || { label: name, sparte: null, n: 0, v: 0, lcolor };
           o.v += full ? v : v / parts.length;
@@ -1288,14 +1654,14 @@ class TariffyGlow extends HTMLElement {
       ? contracts.reduce((s, c) => { const v = this._cpValue(c, R); return s + (v > 0.005 ? v : 0); }, 0)
       : items.reduce((s, x) => s + x.v, 0);
     const seg = (cur, list) => `<div class="seg" role="group">${list.map(([k, l, act]) => `<button type="button" data-act="${act}" class="${cur === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
-    const splitSeg = this._costGroup === "label" ? seg(this._labelSplit, [["full", "Voll zählen", "lsplit-full"], ["equal", "Teilen", "lsplit-equal"]]) : "";
-    const ctl = `<div class="ctl">${splitSeg}${seg(this._costGroup, [["sparte", "Je Sparte", "group-sparte"], ["contract", "Je Vertrag", "group-contract"], ["label", "Je Label", "group-label"]])}</div>`;
-    if (!total) return `<div class="tile"><div class="lbl" style="margin-bottom:12px">Kostenaufteilung · ${esc(R.label)}</div>${ctl}<div class="sub">In diesem Zeitraum fallen keine Kosten an.</div></div>`;
+    const splitSeg = this._costGroup === "label" ? seg(this._labelSplit, [["full", T("Voll zählen"), "lsplit-full"], ["equal", T("Teilen"), "lsplit-equal"]]) : "";
+    const ctl = `<div class="ctl">${splitSeg}${seg(this._costGroup, [["sparte", T("Je Sparte"), "group-sparte"], ["contract", T("Je Vertrag"), "group-contract"], ["label", T("Je Label"), "group-label"]])}</div>`;
+    if (!total) return `<div class="tile"><div class="lbl" style="margin-bottom:12px">${T("Kostenaufteilung ·")} ${esc(R.label)}</div>${ctl}<div class="sub">${T("In diesem Zeitraum fallen keine Kosten an.")}</div></div>`;
     const labelHint = this._costGroup !== "label" ? "" : anyLabel
       ? `<div class="hint2" style="margin:-4px 0 12px">${this._labelSplit === "full"
-        ? (overlap ? `Ein Vertrag mit mehreren Labels zählt bei jedem Label voll. Die Prozente beziehen sich auf alle Kosten (${this._eur(total, 0)}) und ergeben zusammen mehr als 100 %.` : "Ein Vertrag mit mehreren Labels zählt bei jedem Label voll.")
-        : "Ein Vertrag mit mehreren Labels teilt seine Kosten gleichmäßig auf, die Prozente ergeben zusammen 100 %."}</div>`
-      : `<div class="hint2" style="margin:-4px 0 12px;color:var(--orange)">Keine Labels gefunden. Vergib sie am Gerät des Vertrags in Home Assistant (Einstellungen, Geräte, Tariffy, Gerät, Labels) oder lege sie in der Kartenkonfiguration unter <code>labels</code> fest.</div>`;
+        ? (overlap ? `${T("Ein Vertrag mit mehreren Labels zählt bei jedem Label voll. Die Prozente beziehen sich auf alle Kosten (")}${this._eur(total, 0)}${T(") und ergeben zusammen mehr als 100 %.")}` : T("Ein Vertrag mit mehreren Labels zählt bei jedem Label voll."))
+        : T("Ein Vertrag mit mehreren Labels teilt seine Kosten gleichmäßig auf, die Prozente ergeben zusammen 100 %.")}</div>`
+      : `<div class="hint2" style="margin:-4px 0 12px;color:var(--orange)">${T("Keine Labels gefunden. Vergib sie am Gerät des Vertrags in Home Assistant (Einstellungen, Geräte, Tariffy, Gerät, Labels) oder lege sie in der Kartenkonfiguration unter")} <code>labels</code> ${T("fest.")}</div>`;
     let off = 0;
     const slices = items.map((x) => {
       const part = (x.v / total) * 100;
@@ -1305,19 +1671,19 @@ class TariffyGlow extends HTMLElement {
       return s;
     }).join("");
     const fin = (x) => x.sparte === "loan" || x.sparte === "leasing";
-    const kinds = [["Verbrauchsverträge", (x) => METERED.has(x.sparte), "#38bdf8"], ["Pauschalverträge", (x) => !METERED.has(x.sparte) && !fin(x) && x.sparte !== "hauskosten", "#a78bfa"], ["Hauskosten", (x) => x.sparte === "hauskosten", this._groupColor("house")], ["Kredite & Leasing", fin, this._groupColor("loan")]]
+    const kinds = [[T("Verbrauchsverträge"), (x) => METERED.has(x.sparte), "#38bdf8"], [T("Pauschalverträge"), (x) => !METERED.has(x.sparte) && !fin(x) && x.sparte !== "hauskosten", "#a78bfa"], [T("Hauskosten"), (x) => x.sparte === "hauskosten", this._groupColor("house")], [T("Kredite & Leasing"), fin, this._groupColor("loan")]]
       .map(([l, f, col]) => ({ l, col, v: items.filter(f).reduce((s, x) => s + x.v, 0) })).filter((k) => k.v > 0);
     const pct = (v) => `${this._num((v / total) * 100, 1)} %`;
-    return `<div class="tile g-blue"><div class="lbl" style="margin-bottom:12px">Kostenaufteilung</div>${ctl}
+    return `<div class="tile g-blue"><div class="lbl" style="margin-bottom:12px">${T("Kostenaufteilung")}</div>${ctl}
       ${labelHint}
       ${R.a ? `<div class="hint2" style="margin:-4px 0 12px">${{
-        share: "Anteilig: Jede Zahlung zählt auf die Monate verteilt, für die sie gilt (jährlich ÷ 12, halbjährlich ÷ 6, vierteljährlich ÷ 3).",
-        due: "Fällig: Es zählen die Zahlungen, die in diesem Zeitraum tatsächlich anfallen (monatlich, vierteljährlich, halbjährlich, jährlich).",
-        real: "Verbrauch: Bei Strom, Gas und Wasser zählen die Verbrauchskosten, sonst die Abschläge anteilig auf die Tage. Kredite zählen anteilig.",
+        share: T("Anteilig: Jede Zahlung zählt auf die Monate verteilt, für die sie gilt (jährlich ÷ 12, halbjährlich ÷ 6, vierteljährlich ÷ 3)."),
+        due: T("Fällig: Es zählen die Zahlungen, die in diesem Zeitraum tatsächlich anfallen (monatlich, vierteljährlich, halbjährlich, jährlich)."),
+        real: T("Verbrauch: Bei Strom, Gas und Wasser zählen die Verbrauchskosten, sonst die Abschläge anteilig auf die Tage. Kredite zählen anteilig."),
       }[this._costMode]}</div>` : ""}
       ${overlap ? `<div class="lbars">${items.map((x) => `<div class="lb"><div class="lh"><i class="dot" style="background:${x.color};margin:0"></i><span>${esc(x.n > 1 ? `${x.label} (${x.n})` : x.label)}</span><b class="num">${this._eur(x.v)}</b><span class="p num">${pct(x.v)}</span></div><div class="bar"><i style="width:${Math.min(100, (x.v / total) * 100)}%;background:${x.color}"></i></div></div>`).join("")}</div>
-        <div class="kind"><div class="lbl">Alle Kosten im Zeitraum</div><div class="num" style="font-size:22px;font-weight:600;margin-top:4px">${this._eur(total)}</div></div>`
-      : `<div class="chart-body"><div class="donut"><svg viewBox="0 0 42 42" role="img" aria-label="Kostenaufteilung"><circle cx="21" cy="21" r="15.9155" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="6"/>${slices}</svg>
+        <div class="kind"><div class="lbl">${T("Alle Kosten im Zeitraum")}</div><div class="num" style="font-size:22px;font-weight:600;margin-top:4px">${this._eur(total)}</div></div>`
+      : `<div class="chart-body"><div class="donut"><svg viewBox="0 0 42 42" role="img" aria-label="${T("Kostenaufteilung")}"><circle cx="21" cy="21" r="15.9155" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="6"/>${slices}</svg>
         <div class="mid"><b class="num">${this._eur(total, 0)}</b><span>${esc(R.short)}</span></div></div>
         <div class="cleg">${items.map((x) => `<div><i class="dot" style="background:${x.color};margin:0"></i><span>${esc(x.n > 1 ? `${x.label} (${x.n})` : x.label)}</span><b class="num" style="font-weight:500">${this._eur(x.v)}</b><span class="p num">${pct(x.v)}</span></div>`).join("")}</div></div>`}
       ${kinds.length > 1 && this._costGroup !== "label" ? `<div class="kind"><div class="stack">${kinds.map((k) => `<i style="width:${(k.v / total) * 100}%;background:${k.col}"></i>`).join("")}</div>
@@ -1338,14 +1704,14 @@ class TariffyGlow extends HTMLElement {
     const section = (title, n, html) => `<div class="tile"><div class="sec-title" style="margin:0 0 10px"><span class="lbl">${title}</span><span class="cnt" style="font-size:11px;background:rgba(255,255,255,.06);border-radius:10px;padding:0 7px;color:var(--muted)">${n}</span></div>${html}</div>`;
     const money = (v, sign) => (isNum(v) ? this._eur(v, 2, sign) : "–");
     const bal = (v) => `<span class="${this._tone(v)}">${money(v, true)}</span>`;
-    const rec = (c) => (!isNum(c.abschlag_anpassung_empfohlen) ? "–" : c.abschlag_anpassung_empfohlen > 0 ? this._eur(c.abschlag_anpassung_empfohlen) : "kein Abschlag nötig");
+    const rec = (c) => (!isNum(c.abschlag_anpassung_empfohlen) ? "–" : c.abschlag_anpassung_empfohlen > 0 ? this._eur(c.abschlag_anpassung_empfohlen) : T("kein Abschlag nötig"));
 
     const R = this._cpRange();
     const per = Boolean(R.a); // Monat oder Jahr: zusätzliche Spalte „Im Zeitraum“
     const pc = (c) => (per ? this._cpValue(c, R) : 0);
     const addPeriod = (heads, rows, cols) => {
       if (!per) return this._tbl(heads, rows, cols);
-      const h2 = heads.slice(); h2.splice(1, 0, `Im Zeitraum`);
+      const h2 = heads.slice(); h2.splice(1, 0, `${T("Im Zeitraum")}`);
       const r2 = rows.map((r) => ({ ...r, cells: r.cells.slice() }));
       r2.forEach((r) => r.cells.splice(1, 0, r.pv === undefined ? "" : r.pv));
       return this._tbl(h2, r2, cols.replace("repeat(5", "repeat(6").replace("repeat(4", "repeat(5"));
@@ -1357,39 +1723,39 @@ class TariffyGlow extends HTMLElement {
       for (const c of metered) {
         rows.push({ pv: money(pc(c)), cells: [this._nameCell(c), money(this._costSoFar(c)), bal(c.guthaben_bisher), `<span class="${this._tone(c.prognose_real)}">${isNum(c.prognose_real) ? this._eur(c.prognose_real, 0, true) : "–"}</span>`, money(c.abschlag), rec(c)] });
         if (isNum(c.kosten_ht_bisher) || isNum(c.kosten_nt_bisher)) {
-          for (const [l, k, v] of [["Hochtarif", "kosten_ht_bisher", "verbrauch_bisher_ht"], ["Niedertarif", "kosten_nt_bisher", "verbrauch_bisher_nt"]]) {
+          for (const [l, k, v] of [[T("Hochtarif"), "kosten_ht_bisher", "verbrauch_bisher_ht"], [T("Niedertarif"), "kosten_nt_bisher", "verbrauch_bisher_nt"]]) {
             rows.push({ cls: "sub", cells: [`${l} · ${this._num(c[v], 0)} ${unit(c)}`, money(c[k]), "", "", "", ""] });
           }
         }
       }
       const fc = sum(metered, (c) => c.prognose_real), bl = sum(metered, (c) => c.guthaben_bisher);
-      rows.push({ cls: "tot", pv: money(sum(metered, pc)), cells: ["Gesamt", money(sum(metered, (c) => this._costSoFar(c))), bal(bl), `<span class="${this._tone(fc)}">${this._eur(fc, 0, true)}</span>`, money(sum(metered, (c) => c.abschlag)), ""] });
-      out += section("Verbrauchsverträge", metered.length, addPeriod(["Vertrag", "Kosten", "Saldo heute", "Zum Vertragsende", "Abschlag", "Empfohlen"], rows, "1.6fr repeat(5,1fr)")
-        + `<div class="hint2">Positiv ist Guthaben, negativ ist Nachzahlung. „Zum Vertragsende“ ist aus dem bisherigen Verbrauch hochgerechnet.</div>`);
+      rows.push({ cls: "tot", pv: money(sum(metered, pc)), cells: [T("Gesamt"), money(sum(metered, (c) => this._costSoFar(c))), bal(bl), `<span class="${this._tone(fc)}">${this._eur(fc, 0, true)}</span>`, money(sum(metered, (c) => c.abschlag)), ""] });
+      out += section(T("Verbrauchsverträge"), metered.length, addPeriod([T("Vertrag"), T("Kosten"), T("Saldo heute"), T("Zum Vertragsende"), T("Abschlag"), T("Empfohlen")], rows, "1.6fr repeat(5,1fr)")
+        + `<div class="hint2">${T("Positiv ist Guthaben, negativ ist Nachzahlung. „Zum Vertragsende“ ist aus dem bisherigen Verbrauch hochgerechnet.")}</div>`);
     }
 
     const flatSection = (title, list, hint) => {
-      const rows = list.map((c) => ({ pv: money(pc(c)), cells: [this._nameCell(c), money(this._costSoFar(c)), isNum(c.restlaufzeit) ? (c.restlaufzeit >= 0 ? `${c.restlaufzeit} Tage` : "abgelaufen") : "–", c.ende ? this._date(c.ende) : "Kein Vertragsende",
-        `${money(c.abschlag)}${isNum(c.abschlag_jahr) ? `<span class="t2">${this._eur(c.abschlag_jahr, 0)} / Jahr</span>` : ""}`] }));
-      rows.push({ cls: "tot", pv: money(sum(list, pc)), cells: ["Gesamt", money(sum(list, (c) => this._costSoFar(c))), "", "", money(sum(list, (c) => c.abschlag))] });
-      return section(title, list.length, addPeriod(["Vertrag", "Kosten", "Restlaufzeit", "Ende", title === "Hauskosten" ? "Betrag" : "Abschlag"], rows, "1.6fr repeat(4,1fr)") + `<div class="hint2">${hint}</div>`);
+      const rows = list.map((c) => ({ pv: money(pc(c)), cells: [this._nameCell(c), money(this._costSoFar(c)), isNum(c.restlaufzeit) ? (c.restlaufzeit >= 0 ? `${c.restlaufzeit} ${T("Tage")}` : T("abgelaufen")) : "–", c.ende ? this._date(c.ende) : T("Kein Vertragsende"),
+        `${money(c.abschlag)}${isNum(c.abschlag_jahr) ? `<span class="t2">${this._eur(c.abschlag_jahr, 0)} ${T("/ Jahr")}</span>` : ""}`] }));
+      rows.push({ cls: "tot", pv: money(sum(list, pc)), cells: [T("Gesamt"), money(sum(list, (c) => this._costSoFar(c))), "", "", money(sum(list, (c) => c.abschlag))] });
+      return section(title, list.length, addPeriod([T("Vertrag"), T("Kosten"), T("Restlaufzeit"), T("Ende"), title === T("Hauskosten") ? T("Betrag") : T("Abschlag")], rows, "1.6fr repeat(4,1fr)") + `<div class="hint2">${hint}</div>`);
     };
-    if (flat.length) out += flatSection("Pauschalverträge", flat, "Bei Pauschalverträgen sind die Kosten bisher die bis heute fälligen Abschläge.");
-    if (house.length) out += flatSection("Hauskosten", house, "Hauskosten wie Abfallgebühren oder Grundsteuer sind Pauschalverträge und zählen in den Summen mit. Die Kosten bisher sind die bis heute fälligen Beträge.");
+    if (flat.length) out += flatSection(T("Pauschalverträge"), flat, T("Bei Pauschalverträgen sind die Kosten bisher die bis heute fälligen Abschläge."));
+    if (house.length) out += flatSection(T("Hauskosten"), house, T("Hauskosten wie Abfallgebühren oder Grundsteuer sind Pauschalverträge und zählen in den Summen mit. Die Kosten bisher sind die bis heute fälligen Beträge."));
 
     if (loans.length || leasing.length) {
       let html = "";
       if (loans.length) {
         const rows = loans.map((c) => ({ pv: money(pc(c)), cells: [this._nameCell(c), money(c.kredit_gezahlt), money(c.kredit_restschuld), money(c.kredit_restsumme), isNum(c.kredit_rate) ? money(c.kredit_rate) : "–", money(c.kredit_zinsen_gesamt)] }));
-        html += addPeriod(["Kredit", "Gezahlt", "Restschuld", "Restsumme", "Rate", "Zinsen gesamt"], rows, "1.6fr repeat(5,1fr)");
+        html += addPeriod([T("Kredit"), T("Gezahlt"), T("Restschuld"), T("Restsumme"), T("Rate"), T("Zinsen gesamt")], rows, "1.6fr repeat(5,1fr)");
       }
       if (leasing.length) {
-        const km = (c) => (isNum(c.leasing_km_gefahren) ? `${this._num(c.leasing_km_gefahren, 0)} km${isNum(c.leasing_km_erlaubt) ? ` / ${this._num(c.leasing_km_erlaubt, 0)}` : ""}${isNum(c.leasing_km_hochgerechnet) ? `<span class="t2">Hochrechnung ${this._num(c.leasing_km_hochgerechnet, 0)} km</span>` : ""}` : "–");
-        const rows = leasing.map((c) => ({ pv: money(pc(c)), cells: [this._nameCell(c), money(this._costSoFar(c)), isNum(c.restlaufzeit) ? (c.restlaufzeit >= 0 ? `${c.restlaufzeit} Tage` : "abgelaufen") : "–", c.ende ? this._date(c.ende) : "–",
-          `${money(c.abschlag)}${isNum(c.abschlag_jahr) ? `<span class="t2">${this._eur(c.abschlag_jahr, 0)} / Jahr</span>` : ""}`, km(c)] }));
-        html += `<div style="height:${loans.length ? 12 : 0}px"></div>` + addPeriod(["Leasing", "Kosten", "Restlaufzeit", "Ende", "Rate", "Kilometer"], rows, "1.6fr repeat(5,1fr)");
+        const km = (c) => (isNum(c.leasing_km_gefahren) ? `${this._num(c.leasing_km_gefahren, 0)} km${isNum(c.leasing_km_erlaubt) ? ` / ${this._num(c.leasing_km_erlaubt, 0)}` : ""}${isNum(c.leasing_km_hochgerechnet) ? `<span class="t2">${T("Hochrechnung")} ${this._num(c.leasing_km_hochgerechnet, 0)} km</span>` : ""}` : "–");
+        const rows = leasing.map((c) => ({ pv: money(pc(c)), cells: [this._nameCell(c), money(this._costSoFar(c)), isNum(c.restlaufzeit) ? (c.restlaufzeit >= 0 ? `${c.restlaufzeit} ${T("Tage")}` : T("abgelaufen")) : "–", c.ende ? this._date(c.ende) : "–",
+          `${money(c.abschlag)}${isNum(c.abschlag_jahr) ? `<span class="t2">${this._eur(c.abschlag_jahr, 0)} ${T("/ Jahr")}</span>` : ""}`, km(c)] }));
+        html += `<div style="height:${loans.length ? 12 : 0}px"></div>` + addPeriod([T("Leasing"), T("Kosten"), T("Restlaufzeit"), T("Ende"), T("Rate"), T("Kilometer")], rows, "1.6fr repeat(5,1fr)");
       }
-      out += section("Kredite & Leasing", loans.length + leasing.length, html + `<div class="hint2">Die Summen der Tabellen darüber zählen ohne Kredite und Leasing. Die Kostenaufteilung und die Gesamtkachel enthalten sie.</div>`);
+      out += section(T("Kredite & Leasing"), loans.length + leasing.length, html + `<div class="hint2">${T("Die Summen der Tabellen darüber zählen ohne Kredite und Leasing. Die Kostenaufteilung und die Gesamtkachel enthalten sie.")}</div>`);
     }
 
     const everything = [...live, ...loans, ...leasing];
@@ -1400,11 +1766,11 @@ class TariffyGlow extends HTMLElement {
     const archivedSum = sum(archivedIn, pc);
     const now = new Date();
     const m0 = new Date(now.getFullYear(), now.getMonth(), 1), m1 = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    out += `<div class="tile g-green"><div class="bar-row"><span class="lbl">Gesamt</span>
+    out += `<div class="tile g-green"><div class="bar-row"><span class="lbl">${T("Gesamt")}</span>
       ${per ? big(sum(everything, pc) + archivedSum, esc(R.short)) : ""}
-      ${big(soFar, "bisher")}
-      ${big(sum(everything, (c) => this._shareCost(c, m0, m1)), "diesen Monat anteilig")}</div>
-      ${archivedSum > 0.005 ? `<div class="hint2" style="margin-top:8px">Im Zeitraum sind ${this._eur(archivedSum)} von archivierten Verträgen enthalten.</div>` : ""}</div>`;
+      ${big(soFar, T("bisher"))}
+      ${big(sum(everything, (c) => this._shareCost(c, m0, m1)), T("diesen Monat anteilig"))}</div>
+      ${archivedSum > 0.005 ? `<div class="hint2" style="margin-top:8px">${T("Im Zeitraum sind")} ${this._eur(archivedSum)} ${T("von archivierten Verträgen enthalten.")}</div>` : ""}</div>`;
     return `<div class="rows" style="gap:14px">${out}</div>`;
   }
 
@@ -1429,15 +1795,15 @@ class TariffyGlow extends HTMLElement {
     const avg = rows.reduce((s, r) => s + r.total, 0) / (rows.length || 1);
     const max = Math.max(1, ...rows.map((r) => r.total));
     const seg = (cur, list) => `<div class="seg" role="group">${list.map(([k, l, act, id]) => `<button type="button" data-act="${act}" data-id="${id}" class="${cur === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
-    const modes = ["share", "due", "real"], mLabels = { share: "Anteilig", due: "Fällig", real: "Verbrauch" };
-    const bar = `<div class="kper">${seg(N, [[3, "3 Monate", "fcn", 3], [6, "6 Monate", "fcn", 6], [12, "12 Monate", "fcn", 12]])}
-      ${(this._contracts || []).some((c) => !c.archiviert && groupOf(c).key === "loan") && !hide ? `<div class="seg"><button type="button" data-k="all" class="${this._noLoan ? "" : "on"}">Alles</button><button type="button" data-k="nok" class="${this._noLoan ? "on" : ""}">Ohne Kredit &amp; Leasing</button></div>` : ""}
-      <div class="seg" role="group" aria-label="Art der Kosten">${modes.map((k) => `<button type="button" data-act="cmode" data-id="${k}" class="${this._costMode === k ? "on" : ""}">${mLabels[k]}</button>`).join("")}</div></div>`;
-    const hint = { share: "Anteilig: Jede Zahlung zählt auf die Monate verteilt, für die sie gilt.", due: "Fällig: Es zählen die Zahlungen, die im jeweiligen Monat anfallen.",
-      real: "Verbrauch: Bei Strom, Gas und Wasser zählt der Verbrauch desselben Monats im Vorjahr zum heutigen Preis, sonst der Abschlag anteilig." }[this._costMode];
+    const modes = ["share", "due", "real"], mLabels = { share: T("Anteilig"), due: T("Fällig"), real: T("Verbrauch") };
+    const bar = `<div class="kper">${seg(N, [[3, T("3 Monate"), "fcn", 3], [6, T("6 Monate"), "fcn", 6], [12, T("12 Monate"), "fcn", 12]])}
+      ${(this._contracts || []).some((c) => !c.archiviert && groupOf(c).key === "loan") && !hide ? `<div class="seg"><button type="button" data-k="all" class="${this._noLoan ? "" : "on"}">${T("Alles")}</button><button type="button" data-k="nok" class="${this._noLoan ? "on" : ""}">${T("Ohne Kredit &amp; Leasing")}</button></div>` : ""}
+      <div class="seg" role="group" aria-label="${T("Art der Kosten")}">${modes.map((k) => `<button type="button" data-act="cmode" data-id="${k}" class="${this._costMode === k ? "on" : ""}">${mLabels[k]}</button>`).join("")}</div></div>`;
+    const hint = { share: T("Anteilig: Jede Zahlung zählt auf die Monate verteilt, für die sie gilt."), due: T("Fällig: Es zählen die Zahlungen, die im jeweiligen Monat anfallen."),
+      real: T("Verbrauch: Bei Strom, Gas und Wasser zählt der Verbrauch desselben Monats im Vorjahr zum heutigen Preis, sonst der Abschlag anteilig.") }[this._costMode];
     const filterNote = this._filter !== "all"
-      ? `<div class="alert blue" style="cursor:default"><span class="t">Filter aus der Übersicht aktiv<span>${esc(this._filter.startsWith("label:") ? (this._labelsOf(contracts[0] || {}).find((l) => `label:${l.id}` === this._filter) || { name: this._filter.slice(6) }).name : (GROUPS.find((g) => g.key === this._filter) || {}).label || "")}</span></span><button type="button" class="btn" data-act="fclear">Aufheben</button></div>` : "";
-    if (!contracts.length) return `<div class="rows" style="gap:14px">${bar}${filterNote}<div class="tile state">Keine Verträge für die Vorschau.</div></div>`;
+      ? `<div class="alert blue" style="cursor:default"><span class="t">${T("Filter aus der Übersicht aktiv")}<span>${esc(this._filter.startsWith("label:") ? (this._labelsOf(contracts[0] || {}).find((l) => `label:${l.id}` === this._filter) || { name: this._filter.slice(6) }).name : (GROUPS.find((g) => g.key === this._filter) || {}).label || "")}</span></span><button type="button" class="btn" data-act="fclear">${T("Aufheben")}</button></div>` : "";
+    if (!contracts.length) return `<div class="rows" style="gap:14px">${bar}${filterNote}<div class="tile state">${T("Keine Verträge für die Vorschau.")}</div></div>`;
 
     const chart = rows.map((r) => {
       const segs = GROUPS.filter((g) => r.byGroup.has(g.key)).map((g) => `<i style="height:${Math.max(2, (r.byGroup.get(g.key) / max) * 150)}px;background:${this._groupColor(g)}" title="${esc(g.label)} ${this._eur(r.byGroup.get(g.key), 0)}"></i>`).join("");
@@ -1449,22 +1815,22 @@ class TariffyGlow extends HTMLElement {
     const monthRow = (r, i) => {
       const open = this._fcOpen.has(r.key);
       const delta = r.total - avg;
-      const chip = r.total > avg * 1.25 ? `<span class="chip orange">+${this._eur(delta, 0)} über Ø</span>` : i === 0 ? `<span class="chip gray">Aktueller Monat</span>` : "";
+      const chip = r.total > avg * 1.25 ? `<span class="chip orange">+${this._eur(delta, 0)} ${T("über Ø")}</span>` : i === 0 ? `<span class="chip gray">${T("Aktueller Monat")}</span>` : "";
       const lines = r.items.map(({ c, v }) => {
         const notes = [];
         const end = this._ymd(c.ende), nb = c.next && this._ymd(c.next.beginn);
-        if (end && end >= r.a && end < r.b) notes.push(`Vertrag endet am ${this._date(c.ende)}`);
-        if (c.ende && nb && nb >= r.a && nb < r.b) notes.push(`Folgevertrag ab ${this._date(c.next.beginn)}${c.next.anbieter || c.next.tarif ? `: ${[c.next.anbieter, c.next.tarif].filter(Boolean).join(" · ")}` : ""}`);
+        if (end && end >= r.a && end < r.b) notes.push(`${T("Vertrag endet am")} ${this._date(c.ende)}`);
+        if (c.ende && nb && nb >= r.a && nb < r.b) notes.push(`${T("Folgevertrag ab")} ${this._date(c.next.beginn)}${c.next.anbieter || c.next.tarif ? `: ${[c.next.anbieter, c.next.tarif].filter(Boolean).join(" · ")}` : ""}`);
         if (this._costMode === "real" && METERED.has(c.sparte)) {
           const cons = this._monthCons(c, r.a);
-          if (cons !== null && this._unitPrice(c) !== null) notes.push(`Verbrauch ca. ${this._num(cons, 0)} ${this._unit(c)}`);
+          if (cons !== null && this._unitPrice(c) !== null) notes.push(`${T("Verbrauch ca.")} ${this._num(cons, 0)} ${this._unit(c)}`);
         }
         if (this._costMode === "due" && c.zahlweise && c.zahlweise !== "monthly") notes.push(INTERVAL[c.zahlweise] || "");
         return `<div class="fline"><span class="fn"><i class="dot" style="background:${this._sparteColor(c.sparte)}"></i>${esc(c.title)}${notes.length ? `<span class="t2">${esc(notes.filter(Boolean).join(" · "))}</span>` : ""}</span><b class="num">${this._eur(v)}</b></div>`;
       }).join("");
       return `<div class="row ${open ? "open" : ""}"><button type="button" class="rh" data-ftoggle="${esc(r.key)}" aria-expanded="${open}">
-        <span class="n"><b>${esc(r.long)}</b><span>${r.items.length} Posten</span></span>${chip}<span class="v num">${this._eur(r.total)}</span>
-        <svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="rb">${lines || '<div class="sub">Keine Zahlungen.</div>'}</div></div>`;
+        <span class="n"><b>${esc(r.long)}</b><span>${r.items.length} ${T("Posten")}</span></span>${chip}<span class="v num">${this._eur(r.total)}</span>
+        <svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="rb">${lines || T('<div class="sub">Keine Zahlungen.</div>')}</div></div>`;
     };
 
     // Termine im Zeitraum: Ende, Kündigungsfrist, Folgevertrag, mit Hinweis auf Guthaben oder Nachzahlung bei Verbrauchsverträgen
@@ -1472,29 +1838,29 @@ class TariffyGlow extends HTMLElement {
     const within = (iso) => { const d = this._ymd(iso); return d && d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()) && d < to ? d : null; };
     const events = [];
     for (const c of contracts) {
-      const kb = within(c.kuendigung_bis); if (kb) events.push({ d: kb, tone: "orange", t: c.title, s: "Kündigungsfrist endet" });
+      const kb = within(c.kuendigung_bis); if (kb) events.push({ d: kb, tone: "orange", t: c.title, s: T("Kündigungsfrist endet") });
       const e = within(c.ende);
       if (e) {
-        let s = c.next && c.next.beginn ? `Vertrag endet, Folgevertrag ab ${this._date(c.next.beginn)}` : "Vertrag endet";
+        let s = c.next && c.next.beginn ? `${T("Vertrag endet, Folgevertrag ab")} ${this._date(c.next.beginn)}` : T("Vertrag endet");
         const metered = METERED.has(c.sparte) && isNum(c.prognose_real);
-        if (metered) s += c.prognose_real < 0 ? `, Nachzahlung etwa ${this._eur(-c.prognose_real, 0)}` : `, Guthaben etwa ${this._eur(c.prognose_real, 0)}`;
+        if (metered) s += c.prognose_real < 0 ? `${T(", Nachzahlung etwa")} ${this._eur(-c.prognose_real, 0)}` : `${T(", Guthaben etwa")} ${this._eur(c.prognose_real, 0)}`;
         events.push({ d: e, tone: metered && c.prognose_real < 0 ? "red" : "green", t: c.title, s });
       }
-      const w = within(c.wechsel); if (w) events.push({ d: w, tone: "blue", t: c.title, s: "Wechsel auf den Folgevertrag" });
+      const w = within(c.wechsel); if (w) events.push({ d: w, tone: "blue", t: c.title, s: T("Wechsel auf den Folgevertrag") });
     }
     events.sort((x, y) => x.d - y.d);
-    const tl = events.length ? `<div class="tl">${events.map((e) => `<div class="t-${e.tone}"><i class="d"></i><b>${e.d.toLocaleDateString(this._lang, { day: "2-digit", month: "2-digit", year: "numeric" })} ${esc(e.t)}</b><em>${esc(e.s)}</em></div>`).join("")}</div>` : `<div class="sub" style="margin-top:8px">Keine Termine in diesem Zeitraum.</div>`;
+    const tl = events.length ? `<div class="tl">${events.map((e) => `<div class="t-${e.tone}"><i class="d"></i><b>${e.d.toLocaleDateString(this._lang, { day: "2-digit", month: "2-digit", year: "numeric" })} ${esc(e.t)}</b><em>${esc(e.s)}</em></div>`).join("")}</div>` : `<div class="sub" style="margin-top:8px">${T("Keine Termine in diesem Zeitraum.")}</div>`;
 
     const consNote = this._costMode === "real" && contracts.some((c) => METERED.has(c.sparte)) && this._cons && !Object.keys(this._cons).length
-      ? `<div class="hint2" style="color:var(--orange)">Die Verbrauchsstatistik der Verträge war nicht abrufbar. Die Vorschau rechnet dann mit dem hochgerechneten Verbrauch der Laufzeit.</div>` : "";
+      ? `<div class="hint2" style="color:var(--orange)">${T("Die Verbrauchsstatistik der Verträge war nicht abrufbar. Die Vorschau rechnet dann mit dem hochgerechneten Verbrauch der Laufzeit.")}</div>` : "";
 
     return `<div class="rows" style="gap:14px">${bar}${filterNote}
-      <div class="tile g-blue"><div class="bar-row"><span class="lbl">Nächste ${N} Monate</span><span class="num" style="font-size:22px;font-weight:600">${this._eur(rows.reduce((s, r) => s + r.total, 0), 0)} <small style="font-size:12px;font-weight:400;color:var(--muted)">gesamt · Ø ${this._eur(avg, 0)} pro Monat</small></span></div>
+      <div class="tile g-blue"><div class="bar-row"><span class="lbl">${T("Nächste")} ${N} ${T("Monate")}</span><span class="num" style="font-size:22px;font-weight:600">${this._eur(rows.reduce((s, r) => s + r.total, 0), 0)} <small style="font-size:12px;font-weight:400;color:var(--muted)">${T("gesamt · Ø")} ${this._eur(avg, 0)} ${T("pro Monat")}</small></span></div>
         <div class="hint2" style="margin:6px 0 4px">${esc(hint)}</div>
         <div class="fc">${chart}</div><div class="legend" style="margin-top:12px">${legend}</div>${consNote}</div>
       <div class="rows">${rows.map(monthRow).join("")}</div>
-      <div class="tile"><div class="lbl">Termine im Zeitraum</div>${tl}
-        <div class="hint2" style="margin-top:12px">Die Vorschau nimmt die heutigen Preise. Verträge ohne Ende laufen weiter, Verträge mit Ende zählen danach nur mit Folgevertrag.</div></div></div>`;
+      <div class="tile"><div class="lbl">${T("Termine im Zeitraum")}</div>${tl}
+        <div class="hint2" style="margin-top:12px">${T("Die Vorschau nimmt die heutigen Preise. Verträge ohne Ende laufen weiter, Verträge mit Ende zählen danach nur mit Folgevertrag.")}</div></div></div>`;
   }
 
   // ---------- Historie ----------
@@ -1503,7 +1869,7 @@ class TariffyGlow extends HTMLElement {
     const archived = all.filter((c) => c.archiviert).sort((a, b) => a.title.localeCompare(b.title));
     const earlier = all.filter((c) => !c.archiviert && (c.historie || []).length).sort((a, b) => a.title.localeCompare(b.title));
     if (!archived.length && !earlier.length) {
-      return `<div class="tile state"><b style="color:var(--text);font-weight:500;font-size:17px">Noch keine Historie</b><br>Die früheren Laufzeiten eines Vertrags erscheinen hier, sobald der Folgevertrag übernimmt. Archivierte Verträge erscheinen hier ebenfalls.</div>`;
+      return `<div class="tile state"><b style="color:var(--text);font-weight:500;font-size:17px">${T("Noch keine Historie")}</b><br>${T("Die früheren Laufzeiten eines Vertrags erscheinen hier, sobald der Folgevertrag übernimmt. Archivierte Verträge erscheinen hier ebenfalls.")}</div>`;
     }
     const block = (c) => {
       const terms = (c.historie || []).slice().reverse();
@@ -1518,26 +1884,26 @@ class TariffyGlow extends HTMLElement {
       if (((c.historie || []).length || (c.einmalposten || []).length) && isNum(c.kosten_gesamt)) {
         const v = this._eur(c.kosten_gesamt);
         const n = c.laufzeiten_anzahl;
-        const since = [c.seit ? `seit ${this._date(c.seit)}` : null, isNum(n) ? (n === 1 ? "1 Laufzeit" : `${n} Laufzeiten`) : null].filter(Boolean).join(" · ");
-        total = `<div class="hint2">Kosten gesamt: <b style="color:var(--text);font-weight:500">${c.kosten_gesamt_vollstaendig === false ? `mindestens ${v}` : v}</b>${since ? ` · ${since}` : ""}</div>`;
+        const since = [c.seit ? `${T("seit")} ${this._date(c.seit)}` : null, isNum(n) ? (n === 1 ? T("1 Laufzeit") : `${n} ${T("Laufzeiten")}`) : null].filter(Boolean).join(" · ");
+        total = `<div class="hint2">${T("Kosten gesamt:")} <b style="color:var(--text);font-weight:500">${c.kosten_gesamt_vollstaendig === false ? `${T("mindestens")} ${v}` : v}</b>${since ? ` · ${since}` : ""}</div>`;
       }
       const open = this._histOpen.has(c.entry_id);
       const n = (c.historie || []).length;
       const sub = [c.anbieter, c.tarif].filter(Boolean).join(" · ");
-      const meta = [c.archiviert ? "Archiviert" : "", n ? (n === 1 ? "1 frühere Laufzeit" : `${n} frühere Laufzeiten`) : "", c.archiviert && c.ende ? `bis ${this._date(c.ende)}` : ""].filter(Boolean).join(" · ");
+      const meta = [c.archiviert ? T("Archiviert") : "", n ? (n === 1 ? T("1 frühere Laufzeit") : `${n} ${T("frühere Laufzeiten")}`) : "", c.archiviert && c.ende ? `${T("bis")} ${this._date(c.ende)}` : ""].filter(Boolean).join(" · ");
       const sum = isNum(c.kosten_gesamt) ? `${c.kosten_gesamt_vollstaendig === false ? "mind. " : ""}${this._eur(c.kosten_gesamt, 0)}` : "";
       return `<div class="row ${open ? "open" : ""}" data-hrow="${esc(c.entry_id)}">
         <button type="button" class="rh" data-htoggle="${esc(c.entry_id)}" aria-expanded="${open}">
           ${this._icon(c.sparte, null, c.icon)}
           <span class="n"><b>${esc(c.title)}</b><span>${esc(sub)}</span><span class="st" style="color:var(--muted)">${esc(meta)}</span></span>
-          <span class="chip gray">${esc(meta || "Frühere Laufzeiten")}</span>
-          ${sum ? `<span class="v num">${sum} <small>gesamt</small></span>` : ""}
+          <span class="chip gray">${esc(meta || T("Frühere Laufzeiten"))}</span>
+          ${sum ? `<span class="v num">${sum} <small>${T("gesamt")}</small></span>` : ""}
           <svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
         </button>
-        <div class="rb"><div class="hist">${rows.length ? this._tbl(["Laufzeit", "Abschlag", "Kosten", "Verbrauch", "Saldo"], rows, "1.8fr repeat(4,1fr)") : `<div class="sub">Keine früheren Laufzeiten gespeichert.</div>`}${total}</div></div></div>`;
+        <div class="rb"><div class="hist">${rows.length ? this._tbl([T("Laufzeit"), T("Abschlag"), T("Kosten"), T("Verbrauch"), T("Saldo")], rows, "1.8fr repeat(4,1fr)") : `<div class="sub">${T("Keine früheren Laufzeiten gespeichert.")}</div>`}${total}</div></div></div>`;
     };
     const grp = (title, list) => (list.length ? `<div class="sec-title"><span class="lbl">${title}</span><span class="cnt" style="font-size:11px;background:rgba(255,255,255,.06);border-radius:10px;padding:0 7px;color:var(--muted)">${list.length}</span></div>${list.map(block).join("")}` : "");
-    return `<div class="rows" style="gap:8px">${grp("Archivierte Verträge", archived)}${grp("Frühere Laufzeiten", earlier)}</div>`;
+    return `<div class="rows" style="gap:8px">${grp(T("Archivierte Verträge"), archived)}${grp(T("Frühere Laufzeiten"), earlier)}</div>`;
   }
 
   // ---------- Sicherung (nur Admins) ----------
@@ -1564,7 +1930,7 @@ class TariffyGlow extends HTMLElement {
       a.href = url; a.download = `tariffy-backup-${new Date().toISOString().slice(0, 10)}.json`;
       this.shadowRoot.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      bk.message = `Sicherung heruntergeladen: ${backup.contracts.length} Verträge.`;
+      bk.message = `${T("Sicherung heruntergeladen:")} ${backup.contracts.length} ${T("Verträge.")}`;
     } catch (err) { bk.error = this._bkError(err); }
     this._render();
   }
@@ -1572,7 +1938,7 @@ class TariffyGlow extends HTMLElement {
   async _bkPick(file) {
     const bk = this._bk;
     Object.assign(bk, { plan: null, backup: null, file: null, message: null, error: null, asking: null });
-    if (file && file.size > 1048576) bk.error = "Die Datei ist zu groß.";
+    if (file && file.size > 1048576) bk.error = T("Die Datei ist zu groß.");
     else if (file) {
       try {
         const backup = JSON.parse(await file.text());
@@ -1596,35 +1962,35 @@ class TariffyGlow extends HTMLElement {
     const bk = this._bk;
     if (bk.deleted === null && !bk.loading) setTimeout(() => this._bkLoad(), 0);
     const dis = bk.busy ? " disabled" : "";
-    const ask = (text, yes, act, id) => `<div class="ask"><span>${esc(text)}</span><button type="button" class="btn go" data-act="${act}"${id ? ` data-id="${esc(id)}"` : ""}${dis}>${yes}</button><button type="button" class="btn" data-act="bk-cancel">Abbrechen</button></div>`;
+    const ask = (text, yes, act, id) => `<div class="ask"><span>${esc(text)}</span><button type="button" class="btn go" data-act="${act}"${id ? ` data-id="${esc(id)}"` : ""}${dis}>${yes}</button><button type="button" class="btn" data-act="bk-cancel">${T("Abbrechen")}</button></div>`;
     const sec = (title, inner) => `<div class="tile"><div class="lbl" style="margin-bottom:12px">${title}</div><div class="bk">${inner}</div></div>`;
 
     const creating = (bk.plan || []).filter((s) => s.action === "create").length;
     let plan = "";
     if (bk.plan) {
-      const rows = bk.plan.map((s) => ({ cells: [`${esc(s.title)}<span class="t2">${esc(SPARTE_NAME[s.sparte] || s.sparte)}</span>`, `<span class="${s.action === "create" ? "t-green" : "t-gray"}">${s.action === "create" ? "wird angelegt" : "übersprungen: gibt es schon"}</span>`] }));
-      plan = `${bk.file ? `<p>Datei: ${esc(bk.file)}</p>` : ""}${this._tbl(["Vertrag", "Aktion"], rows, "1.6fr 1fr")}
-        ${creating === 0 ? `<p>Nichts wiederherzustellen: die Verträge dieser Datei gibt es schon.</p>`
-          : bk.asking === "restore" ? ask(`${creating} fehlende(n) Vertrag/Verträge aus dieser Datei anlegen? Vorhandene Verträge werden nicht verändert.`, "Ja, wiederherstellen", "bk-restore")
-          : `<div class="acts"><button type="button" class="btn go" data-act="bk-ask-restore"${dis}>Wiederherstellen (${creating})</button></div>`}`;
+      const rows = bk.plan.map((s) => ({ cells: [`${esc(s.title)}<span class="t2">${esc(SPARTE_NAME[s.sparte] || s.sparte)}</span>`, `<span class="${s.action === "create" ? "t-green" : "t-gray"}">${s.action === "create" ? T("wird angelegt") : T("übersprungen: gibt es schon")}</span>`] }));
+      plan = `${bk.file ? `<p>${T("Datei:")} ${esc(bk.file)}</p>` : ""}${this._tbl([T("Vertrag"), T("Aktion")], rows, "1.6fr 1fr")}
+        ${creating === 0 ? `<p>${T("Nichts wiederherzustellen: die Verträge dieser Datei gibt es schon.")}</p>`
+          : bk.asking === "restore" ? ask(T("{n} fehlende(n) Vertrag/Verträge aus dieser Datei anlegen? Vorhandene Verträge werden nicht verändert.", { n: creating }), T("Ja, wiederherstellen"), "bk-restore")
+          : `<div class="acts"><button type="button" class="btn go" data-act="bk-ask-restore"${dis}>${T("Wiederherstellen (")}${creating})</button></div>`}`;
     }
 
-    const deleted = (bk.deleted || []).map((it) => `<div class="bkrow"><div class="n"><b>${esc(it.title)}</b><span>${esc(SPARTE_NAME[it.sparte] || it.sparte)} · gelöscht am ${this._date(it.deleted)}</span></div>
-      ${bk.asking === it.id ? ask(`„${it.title}“ zurückholen?`, "Ja, zurückholen", "bk-restore-one", it.id)
-        : bk.asking === `discard:${it.id}` ? ask(`„${it.title}“ endgültig vergessen? Danach lässt er sich nicht mehr zurückholen.`, "Ja, vergessen", "bk-discard", it.id)
-        : `<div class="acts"><button type="button" class="btn blue" data-act="bk-ask-one" data-id="${esc(it.id)}"${dis}>Zurückholen</button><button type="button" class="btn red" data-act="bk-ask-discard" data-id="${esc(it.id)}"${dis}>Jetzt vergessen</button></div>`}</div>`).join("");
+    const deleted = (bk.deleted || []).map((it) => `<div class="bkrow"><div class="n"><b>${esc(it.title)}</b><span>${esc(SPARTE_NAME[it.sparte] || it.sparte)} ${T("· gelöscht am")} ${this._date(it.deleted)}</span></div>
+      ${bk.asking === it.id ? ask(T("„{t}“ zurückholen?", { t: it.title }), T("Ja, zurückholen"), "bk-restore-one", it.id)
+        : bk.asking === `discard:${it.id}` ? ask(T("„{t}“ endgültig vergessen? Danach lässt er sich nicht mehr zurückholen.", { t: it.title }), T("Ja, vergessen"), "bk-discard", it.id)
+        : `<div class="acts"><button type="button" class="btn blue" data-act="bk-ask-one" data-id="${esc(it.id)}"${dis}>${T("Zurückholen")}</button><button type="button" class="btn red" data-act="bk-ask-discard" data-id="${esc(it.id)}"${dis}>${T("Jetzt vergessen")}</button></div>`}</div>`).join("");
 
     return `<div class="rows" style="gap:14px">
-      <div class="sec-title"><span class="lbl">Darstellung</span></div>
+      <div class="sec-title"><span class="lbl">${T("Darstellung")}</span></div>
       ${this._colorTile()}
-      <div class="sec-title" style="margin-top:12px"><span class="lbl">Sicherung</span></div>
+      <div class="sec-title" style="margin-top:12px"><span class="lbl">${T("Sicherung")}</span></div>
       ${bk.message ? `<div class="msg" role="status">${esc(bk.message)}</div>` : ""}${bk.error ? `<div class="err" role="alert">${esc(bk.error)}</div>` : ""}
-      ${sec("Sicherung erstellen", `<p>Speichert alle Verträge in einer Datei: ihre Daten, die Historie, den geplanten Folgevertrag und die Bestätigungen. Die Datei enthält persönliche Daten (Kundennummer, Zählernummer, Marktlokation, Benachrichtigungsziel). Bewahre sie sicher auf und gib sie nicht weiter.</p>
-        <div class="acts"><button type="button" class="btn blue" data-act="bk-download"${dis}>Sicherung herunterladen</button></div>`)}
-      ${sec("Aus Datei wiederherstellen", `<p>Wähle eine Sicherungsdatei. Du siehst vorher, was passieren würde, bevor etwas angelegt wird. Verträge, die es schon gibt (gleicher Name und Sparte), werden übersprungen und nie verändert. Nur fehlende werden angelegt.</p>
-        <input class="file" id="tg-file" type="file" accept=".json,application/json" aria-label="Sicherungsdatei wählen">${plan}`)}
-      ${sec("Gelöschte Verträge", `<p>Ein gelöschter Vertrag bleibt 30 Tage erhalten und lässt sich hier zurückholen, auch wenn er in Home Assistant gelöscht wurde.</p>
-        ${deleted || (bk.deleted === null ? "" : `<p>Keine gelöschten Verträge.</p>`)}`)}</div>`;
+      ${sec(T("Sicherung erstellen"), `<p>${T("Speichert alle Verträge in einer Datei: ihre Daten, die Historie, den geplanten Folgevertrag und die Bestätigungen. Die Datei enthält persönliche Daten (Kundennummer, Zählernummer, Marktlokation, Benachrichtigungsziel). Bewahre sie sicher auf und gib sie nicht weiter.")}</p>
+        <div class="acts"><button type="button" class="btn blue" data-act="bk-download"${dis}>${T("Sicherung herunterladen")}</button></div>`)}
+      ${sec(T("Aus Datei wiederherstellen"), `<p>${T("Wähle eine Sicherungsdatei. Du siehst vorher, was passieren würde, bevor etwas angelegt wird. Verträge, die es schon gibt (gleicher Name und Sparte), werden übersprungen und nie verändert. Nur fehlende werden angelegt.")}</p>
+        <input class="file" id="tg-file" type="file" accept=".json,application/json" aria-label="${T("Sicherungsdatei wählen")}">${plan}`)}
+      ${sec(T("Gelöschte Verträge"), `<p>${T("Ein gelöschter Vertrag bleibt 30 Tage erhalten und lässt sich hier zurückholen, auch wenn er in Home Assistant gelöscht wurde.")}</p>
+        ${deleted || (bk.deleted === null ? "" : `<p>${T("Keine gelöschten Verträge.")}</p>`)}`)}</div>`;
   }
 
   _kv(label, value) { return `<div class="kv"><span>${label}</span><b class="num">${value}</b></div>`; }
@@ -1643,7 +2009,7 @@ class TariffyGlow extends HTMLElement {
     const s = this._status(c);
     const open = this._open.has(c.entry_id);
     const loan = c.sparte === "loan";
-    const value = loan ? `${this._num(c.kredit_rate)} € <small>/ Mon</small>` : s.tone === "red" || s.tone === "green" ? `<span class="t-${s.tone}">${esc(s.value)}</span>` : `${this._num(this._monthly(c))} € <small>/ Mon</small>`;
+    const value = loan ? `${this._num(c.kredit_rate)} € <small>${T("/ Mon")}</small>` : s.tone === "red" || s.tone === "green" ? `<span class="t-${s.tone}">${esc(s.value)}</span>` : `${this._num(this._monthly(c))} € <small>${T("/ Mon")}</small>`;
     return `<div class="row tone-${s.tone} ${open ? "open" : ""}" data-row="${esc(c.entry_id)}">
       <button type="button" class="rh" data-toggle="${esc(c.entry_id)}" aria-expanded="${open}">
         ${this._icon(c.sparte, null, c.icon)}
@@ -1657,19 +2023,19 @@ class TariffyGlow extends HTMLElement {
 
   // Zeilen zu Laufzeit und Kündigung (Vertragskachel)
   _termRows(c) {
-    const months = (n) => `${n} ${n === 1 ? "Monat" : "Monate"}`;
+    const months = (n) => T(n === 1 ? T("{n} Monat") : T("{n} Monate"), { n });
     const rows = [
-      this._labelsOf(c).length ? this._kv("Labels", this._labelsOf(c).map((l) => `<i class="dot" style="background:${this._labelColor(l)};margin:0 4px 0 6px"></i>${esc(l.name)}`).join("")) : "",
-      c.versicherungsart ? this._kv("Art", INSURANCE[c.versicherungsart] || esc(c.versicherungsart)) : "",
-      c.hauskostenart ? this._kv("Art", HOUSE[c.hauskostenart] || esc(c.hauskostenart)) : "",
-      isNum(c.km_start) ? this._kv("Kilometerstand bei Beginn", `${this._num(c.km_start, 0)} km`) : "",
-      isNum(c.km_pro_jahr) ? this._kv("Erlaubt pro Jahr", `${this._num(c.km_pro_jahr, 0)} km`) : "",
-      c.beginn || c.ende ? this._kv("Laufzeit", `${this._date(c.beginn)} – ${c.ende ? this._date(c.ende) : "offen"}`) : "",
-      isNum(c.restlaufzeit) ? this._kv("Rest", c.restlaufzeit >= 0 ? `${c.restlaufzeit} Tage` : "abgelaufen") : "",
-      isNum(c.mindestlaufzeit) ? this._kv("Mindestlaufzeit", `${months(c.mindestlaufzeit)}${c.mindestlaufzeit_bis ? ` · bis ${this._date(c.mindestlaufzeit_bis)}` : ""}`) : "",
-      isNum(c.kuendigungsfrist) ? this._kv("Kündigungsfrist", months(c.kuendigungsfrist)) : "",
-      c.kuendigung_bis ? this._kv("Kündigen bis", this._date(c.kuendigung_bis)) : "",
-      c.erinnerung_datum ? this._kv("Erinnerung ab", `${this._date(c.erinnerung_datum)} · ${c.erinnerung_bestaetigt ? "bestätigt" : c.erinnerung_aktiv ? "aktiv" : isNum(c.erinnerung_monate) ? months(c.erinnerung_monate) : ""}`) : "",
+      this._labelsOf(c).length ? this._kv(T("Labels"), this._labelsOf(c).map((l) => `<i class="dot" style="background:${this._labelColor(l)};margin:0 4px 0 6px"></i>${esc(l.name)}`).join("")) : "",
+      c.versicherungsart ? this._kv(T("Art"), INSURANCE[c.versicherungsart] || esc(c.versicherungsart)) : "",
+      c.hauskostenart ? this._kv(T("Art"), HOUSE[c.hauskostenart] || esc(c.hauskostenart)) : "",
+      isNum(c.km_start) ? this._kv(T("Kilometerstand bei Beginn"), `${this._num(c.km_start, 0)} km`) : "",
+      isNum(c.km_pro_jahr) ? this._kv(T("Erlaubt pro Jahr"), `${this._num(c.km_pro_jahr, 0)} km`) : "",
+      c.beginn || c.ende ? this._kv(T("Laufzeit"), `${this._date(c.beginn)} – ${c.ende ? this._date(c.ende) : T("offen")}`) : "",
+      isNum(c.restlaufzeit) ? this._kv(T("Rest"), c.restlaufzeit >= 0 ? `${c.restlaufzeit} ${T("Tage")}` : T("abgelaufen")) : "",
+      isNum(c.mindestlaufzeit) ? this._kv(T("Mindestlaufzeit"), `${months(c.mindestlaufzeit)}${c.mindestlaufzeit_bis ? ` ${T("· bis")} ${this._date(c.mindestlaufzeit_bis)}` : ""}`) : "",
+      isNum(c.kuendigungsfrist) ? this._kv(T("Kündigungsfrist"), months(c.kuendigungsfrist)) : "",
+      c.kuendigung_bis ? this._kv(T("Kündigen bis"), this._date(c.kuendigung_bis)) : "",
+      c.erinnerung_datum ? this._kv(T("Erinnerung ab"), `${this._date(c.erinnerung_datum)} · ${c.erinnerung_bestaetigt ? T("bestätigt") : c.erinnerung_aktiv ? T("aktiv") : isNum(c.erinnerung_monate) ? months(c.erinnerung_monate) : ""}`) : "",
     ].join("");
     const pct = this._progress(c);
     return rows + (pct === null ? "" : `<div class="bar" style="color:var(--blue);margin-top:8px"><i style="width:${pct}%;background:var(--blue)"></i></div>`);
@@ -1680,24 +2046,24 @@ class TariffyGlow extends HTMLElement {
     const pu = c.sparte === "water" ? unit : "kWh";
     const price = (v) => `${this._num(v, 4)} €/${pu}`;
     const flat = !METERED.has(c.sparte);
-    const label = c.sparte === "streaming" ? "Preis" : c.sparte === "hauskosten" ? "Betrag" : "Abschlag";
+    const label = c.sparte === "streaming" ? T("Preis") : c.sparte === "hauskosten" ? T("Betrag") : T("Abschlag");
     const sameAsYear = flat && isNum(c.kosten_jahr) && isNum(c.abschlag_jahr) && Math.abs(c.kosten_jahr - c.abschlag_jahr) < 0.005;
     return [
-      isNum(c.arbeitspreis) ? this._kv("Arbeitspreis", price(c.arbeitspreis)) : "",
-      isNum(c.arbeitspreis_nt) ? this._kv("Arbeitspreis Niedertarif", price(c.arbeitspreis_nt)) : "",
-      isNum(c.arbeitspreis_nacht) ? this._kv("Arbeitspreis Nacht", price(c.arbeitspreis_nacht)) : "",
-      isNum(c.effektiver_arbeitspreis) ? this._kv("Arbeitspreis effektiv", price(c.effektiver_arbeitspreis)) : "",
-      isNum(c.arbeitspreis_gesamt_wasser) ? this._kv("Wasserpreis inkl. Abwasser", price(c.arbeitspreis_gesamt_wasser)) : "",
-      isNum(c.grundpreis) ? this._kv("Grundpreis", `${this._num(c.grundpreis)} €/Mon`) : "",
-      isNum(c.abschlag) ? this._kv(`${label} / Monat`, `${this._num(c.abschlag)} €`) : "",
-      isNum(c.abschlag_jahr) && !sameAsYear ? this._kv(`${label} / Jahr`, this._eur(c.abschlag_jahr)) : "",
-      flat && isNum(c.kosten_jahr) ? this._kv("Kosten / Jahr", this._eur(c.kosten_jahr)) : "",
-      c.zahlweise && c.zahlweise !== "monthly" && isNum(c.abschlag_je_zahlung) ? this._kv("Zahlung", `${this._eur(c.abschlag_je_zahlung)} ${INTERVAL[c.zahlweise] || ""}`) : "",
-      c.zahlweise && c.zahlweise !== "monthly" && c.erste_zahlung ? this._kv("Erste Abbuchung", this._date(c.erste_zahlung)) : "",
-      c.naechste_zahlung ? this._kv("Nächste Zahlung", this._date(c.naechste_zahlung)) : "",
-      flat && isNum(this._costSoFar(c)) ? this._kv("Kosten bisher", this._eur(this._costSoFar(c))) : "",
-      isNum(c.kosten_gesamt) && ((c.historie || []).length || (c.einmalposten || []).length) ? this._kv("Kosten gesamt", `${c.kosten_gesamt_vollstaendig === false ? "mind. " : ""}${this._eur(c.kosten_gesamt)}`) : "",
-      isNum(c.empfohlener_abschlag) ? this._kv("Empfohlener Abschlag", `${this._num(c.empfohlener_abschlag)} €/Mon`) : "",
+      isNum(c.arbeitspreis) ? this._kv(T("Arbeitspreis"), price(c.arbeitspreis)) : "",
+      isNum(c.arbeitspreis_nt) ? this._kv(T("Arbeitspreis Niedertarif"), price(c.arbeitspreis_nt)) : "",
+      isNum(c.arbeitspreis_nacht) ? this._kv(T("Arbeitspreis Nacht"), price(c.arbeitspreis_nacht)) : "",
+      isNum(c.effektiver_arbeitspreis) ? this._kv(T("Arbeitspreis effektiv"), price(c.effektiver_arbeitspreis)) : "",
+      isNum(c.arbeitspreis_gesamt_wasser) ? this._kv(T("Wasserpreis inkl. Abwasser"), price(c.arbeitspreis_gesamt_wasser)) : "",
+      isNum(c.grundpreis) ? this._kv(T("Grundpreis"), `${this._num(c.grundpreis)} ${T("€/Mon")}`) : "",
+      isNum(c.abschlag) ? this._kv(`${label} ${T("/ Monat")}`, `${this._num(c.abschlag)} €`) : "",
+      isNum(c.abschlag_jahr) && !sameAsYear ? this._kv(`${label} ${T("/ Jahr")}`, this._eur(c.abschlag_jahr)) : "",
+      flat && isNum(c.kosten_jahr) ? this._kv(T("Kosten / Jahr"), this._eur(c.kosten_jahr)) : "",
+      c.zahlweise && c.zahlweise !== "monthly" && isNum(c.abschlag_je_zahlung) ? this._kv(T("Zahlung"), `${this._eur(c.abschlag_je_zahlung)} ${INTERVAL[c.zahlweise] || ""}`) : "",
+      c.zahlweise && c.zahlweise !== "monthly" && c.erste_zahlung ? this._kv(T("Erste Abbuchung"), this._date(c.erste_zahlung)) : "",
+      c.naechste_zahlung ? this._kv(T("Nächste Zahlung"), this._date(c.naechste_zahlung)) : "",
+      flat && isNum(this._costSoFar(c)) ? this._kv(T("Kosten bisher"), this._eur(this._costSoFar(c))) : "",
+      isNum(c.kosten_gesamt) && ((c.historie || []).length || (c.einmalposten || []).length) ? this._kv(T("Kosten gesamt"), `${c.kosten_gesamt_vollstaendig === false ? "mind. " : ""}${this._eur(c.kosten_gesamt)}`) : "",
+      isNum(c.empfohlener_abschlag) ? this._kv(T("Empfohlener Abschlag"), `${this._num(c.empfohlener_abschlag)} ${T("€/Mon")}`) : "",
     ].join("");
   }
 
@@ -1710,47 +2076,47 @@ class TariffyGlow extends HTMLElement {
     const grid = c.autarkie_aktiv && isNum(c.verbrauch_gesamt_bisher) && isNum(c.verbrauch_gesamt_hochgerechnet);
     const verbrauch = metered || isNum(c.kosten_bisher) ? [
       grid ? [
-        kv("Gesamtverbrauch", `${this._num(c.verbrauch_gesamt_bisher, 0)} / ${this._num(c.verbrauch_gesamt_hochgerechnet, 0)} ${unit}`),
-        kv("Durch PV gedeckt", `${this._num(c.verbrauch_pv_gedeckt_bisher, 0)} / ${this._num(c.verbrauch_pv_gedeckt_hochgerechnet, 0)} ${unit}`),
-        kv("Netzbezug (abgerechnet)", `${this._num(c.verbrauch_bisher, 0)} / ${this._num(c.verbrauch_hochgerechnet, 0)} ${unit}`),
-      ].join("") : [kv("Bisher", amount(c.verbrauch_bisher)), kv("Hochgerechnet", amount(c.verbrauch_hochgerechnet))].join(""),
-      kv("Gartenwasser", amount(c.garten_verbrauch, 1)),
-      kv("Abwasserpflichtig", amount(c.abwasserpflichtiger_verbrauch, 1)),
-      kv("Bisher, Hochtarif", amount(c.verbrauch_bisher_ht)),
-      kv("Bisher, Niedertarif", amount(c.verbrauch_bisher_nt)),
-      kv("Letzte Laufzeit", amount(c.verbrauch_letzte_laufzeit)),
-      kv("Kosten bisher", eur(c.kosten_bisher)),
-      kv("Gartenwasser-Kosten", eur(c.garten_kosten)),
-      kv("Abwasserkosten", eur(c.abwasser_kosten)),
-      kv("Saldo heute", eur(c.guthaben_bisher, true)),
-      kv("Zum Vertragsende", eur(c.prognose_real, true)),
-      c.autarkie_aktiv ? kv("Ohne PV-Autarkie", eur(c.prognose_ohne_autarkie, true)) : "",
-      c.autarkie_aktiv && isNum(c.autarkie_bisher) ? kv("PV-Autarkie bisher", `${this._num(c.autarkie_bisher, 0)} %${isNum(c.autarkie_bisher_nt) ? ` · Niedertarif ${this._num(c.autarkie_bisher_nt, 0)} %` : ""}`) : "",
+        kv(T("Gesamtverbrauch"), `${this._num(c.verbrauch_gesamt_bisher, 0)} / ${this._num(c.verbrauch_gesamt_hochgerechnet, 0)} ${unit}`),
+        kv(T("Durch PV gedeckt"), `${this._num(c.verbrauch_pv_gedeckt_bisher, 0)} / ${this._num(c.verbrauch_pv_gedeckt_hochgerechnet, 0)} ${unit}`),
+        kv(T("Netzbezug (abgerechnet)"), `${this._num(c.verbrauch_bisher, 0)} / ${this._num(c.verbrauch_hochgerechnet, 0)} ${unit}`),
+      ].join("") : [kv(T("Bisher"), amount(c.verbrauch_bisher)), kv(T("Hochgerechnet"), amount(c.verbrauch_hochgerechnet))].join(""),
+      kv(T("Gartenwasser"), amount(c.garten_verbrauch, 1)),
+      kv(T("Abwasserpflichtig"), amount(c.abwasserpflichtiger_verbrauch, 1)),
+      kv(T("Bisher, Hochtarif"), amount(c.verbrauch_bisher_ht)),
+      kv(T("Bisher, Niedertarif"), amount(c.verbrauch_bisher_nt)),
+      kv(T("Letzte Laufzeit"), amount(c.verbrauch_letzte_laufzeit)),
+      kv(T("Kosten bisher"), eur(c.kosten_bisher)),
+      kv(T("Gartenwasser-Kosten"), eur(c.garten_kosten)),
+      kv(T("Abwasserkosten"), eur(c.abwasser_kosten)),
+      kv(T("Saldo heute"), eur(c.guthaben_bisher, true)),
+      kv(T("Zum Vertragsende"), eur(c.prognose_real, true)),
+      c.autarkie_aktiv ? kv(T("Ohne PV-Autarkie"), eur(c.prognose_ohne_autarkie, true)) : "",
+      c.autarkie_aktiv && isNum(c.autarkie_bisher) ? kv(T("PV-Autarkie bisher"), `${this._num(c.autarkie_bisher, 0)} %${isNum(c.autarkie_bisher_nt) ? ` ${T("· Niedertarif")} ${this._num(c.autarkie_bisher_nt, 0)} %` : ""}`) : "",
     ].join("") : "";
     const posten = Array.isArray(c.einmalposten) && c.einmalposten.length
-      ? c.einmalposten.map((x) => this._kv(esc(x.bezeichnung || "Posten"), `<span class="${x.betrag < 0 ? "t-red" : "t-green"}">${this._eur(x.betrag, 2, true)}</span>`)).join("") + (isNum(c.einmal_summe) ? this._kv("Saldo", this._eur(c.einmal_summe, 2, true)) : "")
+      ? c.einmalposten.map((x) => this._kv(esc(x.bezeichnung || T("Posten")), `<span class="${x.betrag < 0 ? "t-red" : "t-green"}">${this._eur(x.betrag, 2, true)}</span>`)).join("") + (isNum(c.einmal_summe) ? this._kv(T("Saldo"), this._eur(c.einmal_summe, 2, true)) : "")
       : "";
     const nx = c.next || {};
     const folge = c.next && nx.beginn ? [
-      kv("Beginn", this._date(nx.beginn)), kv("Ende", nx.ende ? this._date(nx.ende) : ""), kv("Anbieter", esc(nx.anbieter || "")), kv("Tarif", esc(nx.tarif || "")),
-      isNum(nx.arbeitspreis) ? kv("Arbeitspreis", `${this._num(nx.arbeitspreis, 4)} €/${c.sparte === "water" ? unit : "kWh"}`) : "",
-      isNum(nx.abschlag) ? kv(c.sparte === "streaming" ? "Preis" : c.sparte === "hauskosten" ? "Betrag" : "Abschlag", `${this._num(nx.abschlag)} €/Mon`) : "",
+      kv(T("Beginn"), this._date(nx.beginn)), kv(T("Ende"), nx.ende ? this._date(nx.ende) : ""), kv(T("Anbieter"), esc(nx.anbieter || "")), kv(T("Tarif"), esc(nx.tarif || "")),
+      isNum(nx.arbeitspreis) ? kv(T("Arbeitspreis"), `${this._num(nx.arbeitspreis, 4)} €/${c.sparte === "water" ? unit : "kWh"}`) : "",
+      isNum(nx.abschlag) ? kv(c.sparte === "streaming" ? T("Preis") : c.sparte === "hauskosten" ? T("Betrag") : T("Abschlag"), `${this._num(nx.abschlag)} ${T("€/Mon")}`) : "",
     ].join("") : "";
     const items = Array.isArray(c.aussenzaehler) ? c.aussenzaehler : [];
     const aussen = c.sparte === "water" && items.length
-      ? items.map((x) => this._kv(`${esc(x.name || "Zähler")}`, isNum(x.verbrauch) ? `${this._num(x.verbrauch, 1)} ${unit}${isNum(x.kosten) ? ` · ${this._eur(x.kosten)}` : ""}` : "–")).join("") : "";
+      ? items.map((x) => this._kv(`${esc(x.name || T("Zähler"))}`, isNum(x.verbrauch) ? `${this._num(x.verbrauch, 1)} ${unit}${isNum(x.kosten) ? ` · ${this._eur(x.kosten)}` : ""}` : "–")).join("") : "";
     const tile = (label, html) => (html ? `<div class="mini"><span class="lbl">${label}</span>${html}</div>` : "");
     const hint = [];
     if (metered && isNum(c.abschlag_anpassung_empfohlen)) {
       const rec = c.abschlag_anpassung_empfohlen;
-      if (rec < 0) hint.push("Kein Abschlag nötig: Das Guthaben deckt die Kosten bis Vertragsende.");
+      if (rec < 0) hint.push(T("Kein Abschlag nötig: Das Guthaben deckt die Kosten bis Vertragsende."));
       else if (isNum(c.abschlag) && Math.abs(rec - c.abschlag) >= 0.5) hint.push(rec > c.abschlag
-        ? `Beim aktuellen Verbrauch ist eine Nachzahlung von etwa ${this._eur(Math.abs(c.prognose_real || 0), 0)} zu erwarten. Abschlag auf ${this._eur(rec)} pro Monat erhöhen.`
-        : `Abschlag könnte auf ${this._eur(rec)} pro Monat sinken.`);
-      else hint.push("Der Abschlag passt.");
+        ? `${T("Beim aktuellen Verbrauch ist eine Nachzahlung von etwa")} ${this._eur(Math.abs(c.prognose_real || 0), 0)} ${T("zu erwarten. Abschlag auf")} ${this._eur(rec)} ${T("pro Monat erhöhen.")}`
+        : `${T("Abschlag könnte auf")} ${this._eur(rec)} ${T("pro Monat sinken.")}`);
+      else hint.push(T("Der Abschlag passt."));
     }
-    const warn = metered && isNum(c.prognose_real) && c.prognose_real < 0 && !hint.length ? "Es droht eine Nachzahlung." : "";
-    return `<div class="cols">${tile("Vertrag", this._termRows(c))}${tile("Preise", this._priceRows(c, unit))}${tile(metered ? "Verbrauch" : "Kosten", verbrauch)}${tile("Einmalposten", posten)}${tile("Folgevertrag", folge)}${tile("Außenzähler", aussen)}</div>
+    const warn = metered && isNum(c.prognose_real) && c.prognose_real < 0 && !hint.length ? T("Es droht eine Nachzahlung.") : "";
+    return `<div class="cols">${tile(T("Vertrag"), this._termRows(c))}${tile(T("Preise"), this._priceRows(c, unit))}${tile(metered ? T("Verbrauch") : T("Kosten"), verbrauch)}${tile(T("Einmalposten"), posten)}${tile(T("Folgevertrag"), folge)}${tile(T("Außenzähler"), aussen)}</div>
       ${hint.length || warn ? `<div class="hint" style="color:${isNum(c.prognose_real) && c.prognose_real < 0 ? "var(--orange)" : "var(--muted)"}">${esc(hint.join(" ") || warn)}</div>` : ""}`;
   }
 
@@ -1763,29 +2129,29 @@ class TariffyGlow extends HTMLElement {
     const vertrag = this._termRows(c);
     const kosten = this._priceRows(c, "kWh");
     const kmTile = [
-      kv("Kilometerstand", km(c.leasing_km_stand)), kv("Bisher gefahren", km(c.leasing_km_gefahren)),
-      kv("Erlaubt insgesamt", km(c.leasing_km_erlaubt)), kv("Soll bis heute", km(c.leasing_km_soll)),
-      kv("Gegenüber dem Soll", sgn(c.leasing_km_abweichung)), kv("Noch übrig", km(c.leasing_km_rest)),
-      isNum(c.leasing_km_rest_je_tag) ? this._kv("Erlaubt pro Tag", `${this._num(c.leasing_km_rest_je_tag, 1)} km`) : "",
+      kv(T("Kilometerstand"), km(c.leasing_km_stand)), kv(T("Bisher gefahren"), km(c.leasing_km_gefahren)),
+      kv(T("Erlaubt insgesamt"), km(c.leasing_km_erlaubt)), kv(T("Soll bis heute"), km(c.leasing_km_soll)),
+      kv(T("Gegenüber dem Soll"), sgn(c.leasing_km_abweichung)), kv(T("Noch übrig"), km(c.leasing_km_rest)),
+      isNum(c.leasing_km_rest_je_tag) ? this._kv(T("Erlaubt pro Tag"), `${this._num(c.leasing_km_rest_je_tag, 1)} km`) : "",
       isNum(c.leasing_km_prozent) ? `<div class="bar" style="color:var(--cyan);margin-top:8px"><i style="width:${Math.min(100, c.leasing_km_prozent)}%;background:var(--cyan)"></i></div>` : "",
     ].join("");
     const prognose = [
-      isNum(c.leasing_km_je_tag) ? this._kv("Dein Schnitt pro Tag", `${this._num(c.leasing_km_je_tag, 1)} km`) : "",
-      kv("Hochrechnung bei Rückgabe", km(c.leasing_km_hochgerechnet)), kv("Gegenüber der Erlaubnis", sgn(c.leasing_km_abweichung_ende)),
-      c.leasing_mehr_km > 0 ? this._kv("Mehrkilometer", km(c.leasing_mehr_km)) : "",
-      c.leasing_minder_km > 0 ? this._kv("Minderkilometer", km(c.leasing_minder_km)) : "",
-      c.leasing_nachzahlung > 0 ? this._kv("Erwartete Nachzahlung", `<span class="t-red">${this._eur(c.leasing_nachzahlung)}</span>`) : "",
-      c.leasing_gutschrift > 0 ? this._kv("Erwartete Gutschrift", `<span class="t-green">${this._eur(c.leasing_gutschrift)}</span>`) : "",
-      isNum(c.preis_mehrkm) ? this._kv("Preis je Mehrkilometer", this._eur(c.preis_mehrkm)) : "",
-      isNum(c.preis_minderkm) ? this._kv("Gutschrift je Minderkilometer", this._eur(c.preis_minderkm)) : "",
+      isNum(c.leasing_km_je_tag) ? this._kv(T("Dein Schnitt pro Tag"), `${this._num(c.leasing_km_je_tag, 1)} km`) : "",
+      kv(T("Hochrechnung bei Rückgabe"), km(c.leasing_km_hochgerechnet)), kv(T("Gegenüber der Erlaubnis"), sgn(c.leasing_km_abweichung_ende)),
+      c.leasing_mehr_km > 0 ? this._kv(T("Mehrkilometer"), km(c.leasing_mehr_km)) : "",
+      c.leasing_minder_km > 0 ? this._kv(T("Minderkilometer"), km(c.leasing_minder_km)) : "",
+      c.leasing_nachzahlung > 0 ? this._kv(T("Erwartete Nachzahlung"), `<span class="t-red">${this._eur(c.leasing_nachzahlung)}</span>`) : "",
+      c.leasing_gutschrift > 0 ? this._kv(T("Erwartete Gutschrift"), `<span class="t-green">${this._eur(c.leasing_gutschrift)}</span>`) : "",
+      isNum(c.preis_mehrkm) ? this._kv(T("Preis je Mehrkilometer"), this._eur(c.preis_mehrkm)) : "",
+      isNum(c.preis_minderkm) ? this._kv(T("Gutschrift je Minderkilometer"), this._eur(c.preis_minderkm)) : "",
     ].join("");
     let hint = "";
-    if (!isNum(c.leasing_km_gefahren)) hint = "Noch kein Kilometerstand: Wähle in Tariffy einen Sensor oder trage den Stand im Vertrag ein.";
-    else if (!isNum(c.leasing_km_hochgerechnet)) hint = "Die Hochrechnung braucht mindestens zwei Wochen Fahrt.";
-    else if (c.leasing_mehr_km > 0) hint = `In diesem Tempo liegst du bei Rückgabe etwa ${this._num(c.leasing_km_abweichung_ende, 0)} km über der Erlaubnis.`;
-    else if (c.leasing_minder_km > 0) hint = `In diesem Tempo liegst du bei Rückgabe etwa ${this._num(-c.leasing_km_abweichung_ende, 0)} km unter der Erlaubnis.`;
-    else hint = "In diesem Tempo bleibst du bei Rückgabe innerhalb der Erlaubnis.";
-    return `<div class="cols">${tile("Vertrag", vertrag)}${tile("Kosten", kosten)}${tile("Kilometer", kmTile)}${tile("Hochrechnung", prognose)}</div>
+    if (!isNum(c.leasing_km_gefahren)) hint = T("Noch kein Kilometerstand: Wähle in Tariffy einen Sensor oder trage den Stand im Vertrag ein.");
+    else if (!isNum(c.leasing_km_hochgerechnet)) hint = T("Die Hochrechnung braucht mindestens zwei Wochen Fahrt.");
+    else if (c.leasing_mehr_km > 0) hint = `${T("In diesem Tempo liegst du bei Rückgabe etwa")} ${this._num(c.leasing_km_abweichung_ende, 0)} ${T("km über der Erlaubnis.")}`;
+    else if (c.leasing_minder_km > 0) hint = `${T("In diesem Tempo liegst du bei Rückgabe etwa")} ${this._num(-c.leasing_km_abweichung_ende, 0)} ${T("km unter der Erlaubnis.")}`;
+    else hint = T("In diesem Tempo bleibst du bei Rückgabe innerhalb der Erlaubnis.");
+    return `<div class="cols">${tile(T("Vertrag"), vertrag)}${tile(T("Kosten"), kosten)}${tile(T("Kilometer"), kmTile)}${tile(T("Hochrechnung"), prognose)}</div>
       <div class="hint" style="color:${c.leasing_mehr_km > 0 ? "var(--orange)" : "var(--muted)"}">${esc(hint)}</div>`;
   }
 
@@ -1793,10 +2159,10 @@ class TariffyGlow extends HTMLElement {
     const tile = (label, html) => `<div class="mini"><span class="lbl">${label}</span>${html}</div>`;
     const pct = isNum(c.kredit_tilgung_prozent) ? c.kredit_tilgung_prozent : 0;
     return `<div class="cols">
-      ${tile("Restschuld", this._kv("Offen", this._eur(c.kredit_restschuld)) + this._kv("Darlehen", this._eur(c.kredit_summe)) + `<div class="bar" style="color:var(--green);margin-top:8px"><i style="width:${pct}%;background:var(--green)"></i></div>`)}
-      ${tile("Zins", this._kv("Sollzins", `${this._num(c.kredit_sollzins)} %`) + this._kv("Effektiv", `${this._num(c.kredit_effektivzins)} %`) + this._kv("Zinsen bisher", this._eur(c.kredit_zinsen_bisher)))}
-      ${tile("Nächste Rate", this._kv("Datum", this._date(c.kredit_naechste_zahlung)) + this._kv("Betrag", this._eur(c.kredit_naechste_betrag)) + this._kv("Zinsen", this._eur(c.kredit_zins_anteil)) + this._kv("Tilgung", this._eur(c.kredit_tilgung_anteil)))}
-      ${tile("Verlauf", this._kv("Raten", `${c.kredit_zahlungen_geleistet ?? "–"} / ${c.kredit_zahlungen_gesamt ?? "–"}`) + this._kv("Gezahlt", this._eur(c.kredit_gezahlt)) + this._kv("Restsumme", this._eur(c.kredit_restsumme)) + this._kv("Ende", this._date(c.ende)))}
+      ${tile(T("Restschuld"), this._kv(T("Offen"), this._eur(c.kredit_restschuld)) + this._kv(T("Darlehen"), this._eur(c.kredit_summe)) + `<div class="bar" style="color:var(--green);margin-top:8px"><i style="width:${pct}%;background:var(--green)"></i></div>`)}
+      ${tile(T("Zins"), this._kv(T("Sollzins"), `${this._num(c.kredit_sollzins)} %`) + this._kv(T("Effektiv"), `${this._num(c.kredit_effektivzins)} %`) + this._kv(T("Zinsen bisher"), this._eur(c.kredit_zinsen_bisher)))}
+      ${tile(T("Nächste Rate"), this._kv(T("Datum"), this._date(c.kredit_naechste_zahlung)) + this._kv(T("Betrag"), this._eur(c.kredit_naechste_betrag)) + this._kv(T("Zinsen"), this._eur(c.kredit_zins_anteil)) + this._kv(T("Tilgung"), this._eur(c.kredit_tilgung_anteil)))}
+      ${tile(T("Verlauf"), this._kv(T("Raten"), `${c.kredit_zahlungen_geleistet ?? "–"} / ${c.kredit_zahlungen_gesamt ?? "–"}`) + this._kv(T("Gezahlt"), this._eur(c.kredit_gezahlt)) + this._kv(T("Restsumme"), this._eur(c.kredit_restsumme)) + this._kv(T("Ende"), this._date(c.ende)))}
     </div>`;
   }
 }
