@@ -19,6 +19,7 @@ Tariffy muss installiert und eingerichtet sein.
 - **Symbole:** Bei jeder Sparte in den Einstellungen gibt es den Knopf „Symbol“. Er öffnet den Symbol-Wähler von Home Assistant mit Suche und Vorschlägen. Ist er nicht geladen, erscheinen Vorschläge zum Antippen und ein Feld für ein eigenes Symbol (`mdi:car`). Ein Symbol, das du in Tariffy an einem Vertrag gewählt hast, hat Vorrang.
 - **Farben:** Auf der Seite Einstellungen (Admins) wählst du für jede genutzte Sparte und jede Gruppe eine Farbe, aus einer Palette oder frei. Sie gilt für Symbole, Kostenaufteilung und Legenden. Gespeichert wird sie im Benutzerkonto in Home Assistant. Für alle Benutzer lässt sie sich als `colors:` in der Kartenkonfiguration eintragen (Knopf „Als YAML kopieren“).
 - **Verträge verwalten** (nur Admins): „+ Neuer Vertrag“ auf der Übersicht und in der Vertragsliste. In der Zeile jedes Vertrags stehen wie im Tariffy-Panel Symbole für Vertrag verlängern (bei Krediten Anschlussfinanzierung), Folgevertrag planen oder bearbeiten und Vertrag bearbeiten, dahinter der Pfeil zum Aufklappen. Unter den Details stehen Warnung und Kündigung bestätigen und Archivieren. Archivierte Verträge lassen sich in der Historie zurückholen. Löschen geht im Bearbeiten-Dialog und verlangt die Eingabe des Namens. Die Formulare kommen von Home Assistant selbst (die Konfiguration der Integration), Prüfung und Speichern bleiben in Tariffy, Beschriftungen und Fehler erscheinen in deiner Sprache.
+- **Vertragsdetails vollständig** (wie im Tariffy-Panel): Anbieter, Tarif, Kundennummer, Zählernummer(n) und MaLo-ID (nur Admins, mit Kopieren-Knopf), Beginn, Ende, Restlaufzeit. Admins können **Einmalposten** (Bonus oder Rechnung) hinzufügen, bearbeiten und löschen, **gezahlte Abschläge** je Zahlung eintragen (monatlich ein Feld je Monat, sonst je Zahlung) und **Außenzähler** eines Wasservertrags verwalten.
 - **Vorschau:** Die nächsten 3, 6 oder 12 Monate als Balken je Monat (nach Gruppen gefärbt, Monate mit hohen Zahlungen hervorgehoben) und als aufklappbare Liste je Monat mit allen Posten. Die Art lässt sich wählen: **Anteilig**, **Fällig** oder **Verbrauch**. Verträge ohne Ende laufen weiter. Hat ein Vertrag ein Ende, zählt er danach nur, wenn ein Folgevertrag hinterlegt ist. Bei Strom, Gas und Wasser nimmt „Verbrauch“ den Verbrauch desselben Monats im Vorjahr zum heutigen Preis, aus der Langzeitstatistik des Sensors „Verbrauch bisher“ jedes Vertrags. Unten stehen die Termine im Zeitraum mit erwarteter Nachzahlung oder erwartetem Guthaben.
 - **Historie:** archivierte Verträge und frühere Laufzeiten als eingeklappte Zeilen mit den Gesamtkosten. Ein Tipp klappt die Laufzeiten mit Kosten, Verbrauch und Saldo auf. Beim Verlassen der Seite oder des Tabs schließen sie sich wieder.
 - **Einstellungen** (nur Admins): Farben (siehe unten) und Sicherung: Sicherung herunterladen, aus Datei wiederherstellen (mit Vorschau und Rückfrage) und gelöschte Verträge zurückholen oder endgültig vergessen.
@@ -38,7 +39,7 @@ Tariffy muss installiert und eingerichtet sein.
 
 1. `dist/tariffy-glow.js` nach `/config/www/tariffy-glow/` kopieren.
 2. **Einstellungen → Dashboards → ⋮ → Ressourcen** → Eintrag hinzufügen (Typ **JavaScript-Modul**):
-   `/local/tariffy-glow/tariffy-glow.js?v=24`
+   `/local/tariffy-glow/tariffy-glow.js?v=25`
 
 ## Konfiguration
 
